@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Header from "@/components/Header";
 import { TrendingUp, Zap, Shield, BarChart3 } from "lucide-react";
+import { useDynamic } from "@/hooks/useDynamic";
+import { createAnalysis } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -11,18 +14,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Mock wallet state - будет заменено на Dynamic.xyz
-  const [walletAddress, setWalletAddress] = useState<string | undefined>(undefined);
-  const [radarBalance] = useState(500);
-
-  const handleConnectWallet = () => {
-    // TODO: Интегрировать Dynamic.xyz
-    setWalletAddress("0x1234567890abcdef1234567890abcdef12345678");
-  };
-
-  const handleDisconnect = () => {
-    setWalletAddress(undefined);
-  };
+  // Dynamic.xyz integration
+  const { walletAddress, radarBalance, connectWallet, disconnectWallet, isLoading: walletLoading } = useDynamic();
 
   const validatePolymarketUrl = (url: string): boolean => {
     try {
@@ -58,19 +51,40 @@ export default function Home() {
 
     setIsLoading(true);
 
-    // TODO: Отправить webhook на Make.com
-    // Временно переходим на страницу анализа
-    setTimeout(() => {
-      setLocation("/analyzing");
-    }, 500);
+    try {
+      // Создаем анализ и списываем токены
+      const analysisId = await createAnalysis({
+        walletAddress,
+        polymarketUrl,
+      });
+
+      toast.success("Analysis started! 100 RADAR tokens deducted.");
+
+      // TODO: Отправить webhook на Make.com с analysisId
+      // const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;
+      // await fetch(webhookUrl, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ analysisId, polymarketUrl })
+      // });
+
+      // Переходим на страницу анализа
+      setLocation(`/analyzing?id=${analysisId}`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to start analysis";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header
         walletAddress={walletAddress}
-        onConnectWallet={handleConnectWallet}
-        onDisconnect={handleDisconnect}
+        onConnectWallet={connectWallet}
+        onDisconnect={disconnectWallet}
         radarBalance={radarBalance}
       />
 

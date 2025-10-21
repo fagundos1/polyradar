@@ -10,6 +10,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Prediction, TimelineEvent, Insight } from "@/lib/supabase";
+import { useDynamic } from "@/hooks/useDynamic";
+import { getAnalysis, saveAnalysisResults } from "@/lib/api";
+import type { Analysis } from "@/lib/supabase";
 
 // Mock data для демонстрации
 const mockData = {
@@ -101,18 +104,37 @@ export default function Results() {
   const [, setLocation] = useLocation();
   const [activeSection, setActiveSection] = useState("predictions");
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [loading, setLoading] = useState(true);
   
-  // Mock wallet state
-  const [walletAddress] = useState<string | undefined>("0x1234567890abcdef1234567890abcdef12345678");
-  const [radarBalance] = useState(400);
-
-  const handleConnectWallet = () => {
-    // TODO: Интегрировать Dynamic.xyz
-  };
+  // Dynamic.xyz integration
+  const { walletAddress, radarBalance, connectWallet, disconnectWallet } = useDynamic();
 
   const handleDisconnect = () => {
+    disconnectWallet();
     setLocation("/");
   };
+
+  // Загружаем анализ из Supabase
+  useEffect(() => {
+    const loadAnalysis = async () => {
+      if (!params?.id) return;
+
+      setLoading(true);
+      const data = await getAnalysis(params.id);
+      
+      if (data) {
+        setAnalysis(data);
+      } else {
+        // Если анализ не найден, используем mock данные
+        // В реальном приложении можно перенаправить на 404
+        console.warn('Analysis not found, using mock data');
+      }
+      setLoading(false);
+    };
+
+    loadAnalysis();
+  }, [params?.id]);
 
   const toggleRow = (index: number) => {
     const newExpanded = new Set(expandedRows);
@@ -165,11 +187,27 @@ export default function Results() {
 
   if (!match) return null;
 
+  // Используем данные из analysis или mock данные
+  const predictions = (analysis?.predictions as Prediction[]) || mockData.predictions;
+  const timeline = (analysis?.timeline as TimelineEvent[]) || mockData.timeline;
+  const insights = (analysis?.insights as Insight[]) || mockData.insights;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading analysis...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header
         walletAddress={walletAddress}
-        onConnectWallet={handleConnectWallet}
+        onConnectWallet={connectWallet}
         onDisconnect={handleDisconnect}
         radarBalance={radarBalance}
       />
@@ -232,7 +270,7 @@ export default function Results() {
                     </tr>
                   </thead>
                   <tbody>
-                    {mockData.predictions.map((pred, index) => (
+                    {predictions.map((pred, index) => (
                       <>
                         <tr
                           key={index}
@@ -341,7 +379,7 @@ export default function Results() {
               
               {/* Events */}
               <div className="flex justify-between items-start relative">
-                {mockData.timeline.map((event, index) => (
+                {timeline.map((event, index) => (
                   <div key={index} className="flex flex-col items-center group cursor-pointer">
                     {/* Date above */}
                     <span className="text-sm font-mono mb-2">{event.date}</span>
@@ -374,7 +412,7 @@ export default function Results() {
           <section id="insights">
             <h2 className="text-2xl font-bold mb-6">KEY INSIGHTS</h2>
             <div className="space-y-4">
-              {mockData.insights.map((insight, index) => (
+              {insights.map((insight, index) => (
                 <div
                   key={index}
                   className={`p-6 rounded-xl border-l-4 ${

@@ -1,19 +1,27 @@
 import { useEffect } from "react";
+import { useDynamic } from "@/hooks/useDynamic";
 import { useLocation } from "wouter";
 import { Loader2, TrendingUp, Calendar, Lightbulb } from "lucide-react";
 
 export default function Analyzing() {
   const [, setLocation] = useLocation();
+  const { refreshBalance } = useDynamic();
+
+  // Получаем analysisId из URL
+  const searchParams = new URLSearchParams(window.location.search);
+  const analysisId = searchParams.get('id') || 'mock-analysis-id';
 
   useEffect(() => {
     // Симуляция анализа - в реальности будет ожидание webhook от Make.com
-    const timer = setTimeout(() => {
-      // Переход на страницу результатов с mock данными
-      setLocation("/results/mock-analysis-id");
+    const timer = setTimeout(async () => {
+      // Обновляем баланс перед переходом на результаты
+      await refreshBalance();
+      // Переход на страницу результатов
+      setLocation(`/results/${analysisId}`);
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [setLocation]);
+  }, [setLocation, refreshBalance, analysisId]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
