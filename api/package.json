@@ -1,0 +1,10 @@
+{
+  "name": "polyradar-api",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.2",
+    "@vercel/node": "^5.4.1"
+  }
+}
+

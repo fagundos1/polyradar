@@ -1,17 +1,16 @@
 {
   "buildCommand": "cd client && pnpm run build",
   "outputDirectory": "client/dist",
-  "installCommand": "pnpm install",
+  "installCommand": "cd client && pnpm install",
   "framework": null,
-
   "rewrites": [
     {
-      "source": "/api/webhooks/analysis-result",
+      "source": "/api/webhooks/:path*",
       "destination": "/api/webhooks"
     },
     {
-      "source": "/api/webhooks/analysis-error",
-      "destination": "/api/webhooks"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
