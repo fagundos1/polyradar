@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server/_core/index.ts",
-    "build": "mkdir -p dist && vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js && mkdir -p .vercel/output/functions/api && cp dist/index.js .vercel/output/functions/api/index.js && mkdir -p .vercel/output/static && cp -r dist/* .vercel/output/static/",
+    "build": "vite build",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
