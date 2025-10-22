@@ -30,5 +30,5 @@ __tests__
 *.test.*
 *.spec.*
 
-# Patches
+# Patches (exclude from deployment)
 patches/
