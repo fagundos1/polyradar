@@ -1,22 +1,6 @@
 {
-  "buildCommand": "pnpm build",
+  "buildCommand": "pnpm run build",
   "outputDirectory": "dist/public",
-  "installCommand": "pnpm install",
-  "framework": null,
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "@vercel/node@3.2.18"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/api/webhooks/:path*",
-      "destination": "/api/webhooks"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "installCommand": "pnpm install"
 }
 
