@@ -1,7 +1,6 @@
 {
   "version": 2,
   "buildCommand": "pnpm install --frozen-lockfile && pnpm run build",
-  "outputDirectory": "dist",
   "functions": {
     "api/index.js": {
       "maxDuration": 30
