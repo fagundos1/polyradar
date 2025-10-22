@@ -1,0 +1,22 @@
+{
+  "buildCommand": "cd client && pnpm run build",
+  "outputDirectory": "client/dist",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs22.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/webhooks/analysis-result",
+      "destination": "/api/webhooks"
+    },
+    {
+      "source": "/api/webhooks/analysis-error",
+      "destination": "/api/webhooks"
+    }
+  ]
+}
+
