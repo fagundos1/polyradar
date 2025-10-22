@@ -1,3 +1,8 @@
 {
-  "buildCommand": "pnpm install --frozen-lockfile && pnpm run build"
+  "buildCommand": "pnpm install --frozen-lockfile && pnpm run build",
+  "functions": {
+    "api/simple.js": {
+      "maxDuration": 30
+    }
+  }
 }
