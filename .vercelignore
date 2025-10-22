@@ -7,7 +7,7 @@ node_modules
 .env.development
 
 # Build artifacts (will be generated during build)
-dist
+# dist - keep this directory for Vercel
 
 # Development tools
 .vscode
