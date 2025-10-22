@@ -1,0 +1,16 @@
+{
+  "buildCommand": "cd client && pnpm run build",
+  "outputDirectory": "client/dist",
+  "installCommand": "cd client && pnpm install",
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        }
+      ]
+    }
+  ]
+}
