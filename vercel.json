@@ -1,11 +1,6 @@
 {
   "version": 2,
   "buildCommand": "pnpm install --frozen-lockfile && pnpm run build",
-  "functions": {
-    "api/index.ts": {
-      "maxDuration": 30
-    }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
