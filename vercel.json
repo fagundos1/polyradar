@@ -1,16 +1,6 @@
 {
   "version": 2,
   "buildCommand": "pnpm install --frozen-lockfile && pnpm run build",
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.ts"
-    }
-  ],
   "env": {
     "NODE_ENV": "production"
   }
