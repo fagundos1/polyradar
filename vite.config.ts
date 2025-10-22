@@ -5,9 +5,26 @@ import fs from "node:fs";
 import path from "path";
 import { defineConfig } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
+import { createHtmlPlugin } from "vite-plugin-html";
 
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime()];
+const plugins = [
+  react(),
+  tailwindcss(),
+  jsxLocPlugin(),
+  vitePluginManusRuntime(),
+  createHtmlPlugin({
+    minify: true,
+    inject: {
+      data: {
+        VITE_APP_TITLE: process.env.VITE_APP_TITLE || "PolyRadar",
+        VITE_APP_LOGO: process.env.VITE_APP_LOGO || "https://placehold.co/40x40/3b82f6/ffffff?text=P",
+        VITE_ANALYTICS_ENDPOINT: process.env.VITE_ANALYTICS_ENDPOINT || "",
+        VITE_ANALYTICS_WEBSITE_ID: process.env.VITE_ANALYTICS_WEBSITE_ID || "",
+      },
+    },
+  }),
+];
 
 export default defineConfig({
   plugins,
