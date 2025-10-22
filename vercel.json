@@ -1,7 +1,4 @@
 {
-  "framework": null,
-  "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm run build",
-  "outputDirectory": "dist"
+  "buildCommand": "pnpm install --frozen-lockfile && pnpm run build && mkdir -p .vercel/output/static && cp -r dist/* .vercel/output/static/"
 }
 
