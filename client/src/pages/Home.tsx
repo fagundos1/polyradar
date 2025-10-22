@@ -44,10 +44,11 @@ export default function Home() {
       return;
     }
 
-    if (radarBalance < 100) {
-      setError("Insufficient RADAR balance. You need at least 100 RADAR tokens.");
-      return;
-    }
+    // Временно отключено для тестирования
+    // if (radarBalance < 100) {
+    //   setError("Insufficient RADAR balance. You need at least 100 RADAR tokens.");
+    //   return;
+    // }
 
     setIsLoading(true);
 

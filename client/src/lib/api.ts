@@ -25,30 +25,49 @@ export async function createAnalysis(params: CreateAnalysisParams): Promise<stri
     .eq('wallet_address', walletAddress)
     .single();
 
+  // Если пользователь не найден, создаем его
+  let userId: string;
   if (userError || !user) {
-    throw new Error('User not found');
+    const { data: newUser, error: createError } = await supabase
+      .from('users')
+      .insert({
+        wallet_address: walletAddress,
+        radar_balance: 500,
+        free_searches_used: 0,
+      })
+      .select()
+      .single();
+
+    if (createError || !newUser) {
+      console.error('Error creating user:', createError);
+      throw new Error('Failed to create user');
+    }
+    userId = newUser.id;
+  } else {
+    userId = user.id;
   }
 
+  // Временно отключено для тестирования
   // Проверяем баланс
-  if (user.radar_balance < 100) {
-    throw new Error('Insufficient RADAR balance');
-  }
+  // if (user.radar_balance < 100) {
+  //   throw new Error('Insufficient RADAR balance');
+  // }
 
   // Списываем токены
-  const { error: updateError } = await supabase
-    .from('users')
-    .update({ radar_balance: user.radar_balance - 100 })
-    .eq('wallet_address', walletAddress);
+  // const { error: updateError } = await supabase
+  //   .from('users')
+  //   .update({ radar_balance: user.radar_balance - 100 })
+  //   .eq('wallet_address', walletAddress);
 
-  if (updateError) {
-    throw new Error('Failed to deduct tokens');
-  }
+  // if (updateError) {
+  //   throw new Error('Failed to deduct tokens');
+  // }
 
   // Создаем запись анализа
   const { data: analysis, error: analysisError } = await supabase
     .from('analyses')
     .insert({
-      user_id: user.id,
+      user_id: userId,
       polymarket_url: polymarketUrl,
       status: 'pending',
       tokens_spent: 100,
@@ -57,22 +76,39 @@ export async function createAnalysis(params: CreateAnalysisParams): Promise<stri
     .single();
 
   if (analysisError || !analysis) {
-    // Возвращаем токены в случае ошибки
-    await supabase
-      .from('users')
-      .update({ radar_balance: user.radar_balance })
-      .eq('wallet_address', walletAddress);
-    
+    console.error('Error creating analysis:', analysisError);
     throw new Error('Failed to create analysis');
   }
 
   // Создаем транзакцию
   await supabase.from('transactions').insert({
-    user_id: user.id,
+    user_id: userId,
     type: 'spend',
     amount: -100,
     description: `Analysis for ${polymarketUrl}`,
   });
+
+  // Отправляем webhook на Make.com для анализа
+  try {
+    const webhookUrl = 'https://hook.us2.make.com/mio87mwc00gx78v2wo1ex41xwzhrmpd5';
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        polymarket_url: polymarketUrl,
+        analysis_id: analysis.id,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('Failed to send webhook:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error sending webhook:', error);
+    // Не прерываем выполнение, если webhook не отправился
+  }
 
   return analysis.id;
 }

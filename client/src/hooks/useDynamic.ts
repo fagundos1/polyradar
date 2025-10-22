@@ -14,38 +14,48 @@ export function useDynamic() {
         const address = primaryWallet.address;
         setWalletAddress(address);
 
-        // Проверяем, существует ли пользователь в Supabase
-        const { data: existingUser, error: fetchError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('wallet_address', address)
-          .single();
-
-        if (fetchError && fetchError.code !== 'PGRST116') {
-          console.error('Error fetching user:', fetchError);
-          setIsLoading(false);
-          return;
-        }
-
-        if (!existingUser) {
-          // Создаем нового пользователя с 5 бесплатными поисками (500 токенов)
-          const { data: newUser, error: insertError } = await supabase
+        try {
+          // Проверяем, существует ли пользователь в Supabase
+          const { data: existingUser, error: fetchError } = await supabase
             .from('users')
-            .insert({
-              wallet_address: address,
-              radar_balance: 500,
-              free_searches_used: 0,
-            })
-            .select()
+            .select('*')
+            .eq('wallet_address', address)
             .single();
 
-          if (insertError) {
-            console.error('Error creating user:', insertError);
-          } else if (newUser) {
-            setRadarBalance(newUser.radar_balance);
+          if (fetchError && fetchError.code !== 'PGRST116') {
+            console.error('Error fetching user:', fetchError);
+            // Устанавливаем баланс по умолчанию для тестирования
+            setRadarBalance(500);
+            setIsLoading(false);
+            return;
           }
-        } else {
-          setRadarBalance(existingUser.radar_balance);
+
+          if (!existingUser) {
+            // Создаем нового пользователя с 5 бесплатными поисками (500 токенов)
+            const { data: newUser, error: insertError } = await supabase
+              .from('users')
+              .insert({
+                wallet_address: address,
+                radar_balance: 500,
+                free_searches_used: 0,
+              })
+              .select()
+              .single();
+
+            if (insertError) {
+              console.error('Error creating user:', insertError);
+              // Устанавливаем баланс по умолчанию для тестирования
+              setRadarBalance(500);
+            } else if (newUser) {
+              setRadarBalance(newUser.radar_balance);
+            }
+          } else {
+            setRadarBalance(existingUser.radar_balance);
+          }
+        } catch (error) {
+          console.error('Error initializing user:', error);
+          // Устанавливаем баланс по умолчанию для тестирования
+          setRadarBalance(500);
         }
       } else {
         setWalletAddress(undefined);
