@@ -16,10 +16,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { polymarket_url, user_id } = req.body;
+    const { event_url, user_id } = req.body;
 
-    if (!polymarket_url) {
-      return res.status(400).json({ error: 'polymarket_url is required' });
+    if (!event_url) {
+      return res.status(400).json({ error: 'event_url is required' });
     }
 
     // Initialize Supabase client
@@ -33,7 +33,7 @@ export default async function handler(req, res) {
       .from('analyses')
       .insert({
         user_id: user_id || null,
-        event_url: polymarket_url,
+        event_url: event_url,
         status: 'processing',
       })
       .select()
@@ -79,7 +79,7 @@ export default async function handler(req, res) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               analysis_id,
-              event_url: polymarket_url,
+              event_url: event_url,
               callback_url: `https://polyradar.io/api/webhooks/predictions/${model}`,
             }),
           }).catch(err => console.error(`Error triggering ${model}:`, err))
@@ -94,7 +94,7 @@ export default async function handler(req, res) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           analysis_id,
-          event_url: polymarket_url,
+          event_url: event_url,
           callback_url: 'https://polyradar.io/api/webhooks/timeline',
         }),
       }).catch(err => console.error('Error triggering timeline:', err))
@@ -107,7 +107,7 @@ export default async function handler(req, res) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           analysis_id,
-          event_url: polymarket_url,
+          event_url: event_url,
           callback_url: 'https://polyradar.io/api/webhooks/insights',
         }),
       }).catch(err => console.error('Error triggering insights:', err))
