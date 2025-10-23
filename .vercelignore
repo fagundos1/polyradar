@@ -1,4 +1,4 @@
-# Ignore API directory from Vercel processing
+# Ignore old API directory structure
 api/
 
 # Other ignores
