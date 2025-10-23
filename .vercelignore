@@ -1,6 +1,3 @@
-# Ignore old API directory structure
-api/
-
 # Other ignores
 node_modules
 .env

@@ -104,7 +104,7 @@ export default async function handler(req, res) {
     webhookPromises.push(
       fetch(WEBHOOK_URLS.insights, {
         method: 'POST',
-        headers: { 'Content-Type: application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           analysis_id,
           event_url: polymarket_url,
@@ -125,5 +125,4 @@ export default async function handler(req, res) {
     console.error('Error in analyze endpoint:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
-};
-
+}
