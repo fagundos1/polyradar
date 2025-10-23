@@ -54,11 +54,28 @@ export async function createAnalysis(params: CreateAnalysisParams): Promise<stri
   });
 
   if (!response.ok) {
-    const error = await response.json();
+    const contentType = response.headers.get('content-type');
+    let error;
+    
+    if (contentType && contentType.includes('application/json')) {
+      error = await response.json();
+    } else {
+      const errorText = await response.text();
+      error = { error: errorText || 'Failed to start analysis' };
+    }
+    
     throw new Error(error.error || 'Failed to start analysis');
   }
 
-  const result = await response.json();
+  const contentType = response.headers.get('content-type');
+  let result;
+  
+  if (contentType && contentType.includes('application/json')) {
+    result = await response.json();
+  } else {
+    const text = await response.text();
+    throw new Error(`Unexpected response format: ${text.substring(0, 100)}`);
+  }
   
   // Создаем транзакцию
   await supabase.from('transactions').insert({
