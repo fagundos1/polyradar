@@ -1,34 +1,11 @@
-# Dependencies
+# Ignore API directory from Vercel processing
+api/
+
+# Other ignores
 node_modules
-.pnpm-store
-
-# Development files
-.env.local
-.env.development
-
-# Build artifacts (will be generated during build)
-# dist - keep this directory for Vercel
-
-# Development tools
-.vscode
-.idea
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Git
+.env
+.env.*
+*.log
 .git
-.gitignore
-
-# Documentation
-README.md
-*.md
-
-# Test files
-__tests__
-*.test.*
-*.spec.*
-
-# Patches (exclude from deployment)
+.DS_Store
 patches/
