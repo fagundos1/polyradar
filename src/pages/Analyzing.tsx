@@ -68,12 +68,11 @@ export default function Analyzing() {
 
     if (hasCompletedPrediction || hasCompletedTimeline || hasCompletedInsights) {
       if (!hasAnyResult) {
+        console.log('[Analyzing] First result detected, redirecting to results page');
         setHasAnyResult(true);
-        // Переходим на страницу результатов при первом готовом результате
-        setTimeout(() => {
-          refreshBalance();
-          setLocation(`/results/${analysisId}`);
-        }, 1000);
+        // Переходим на страницу результатов НЕМЕДЛЕННО при первом готовом результате
+        refreshBalance();
+        setLocation(`/results/${analysisId}`);
       }
     }
   }, [predictions, timeline, insights, hasAnyResult, analysisId, setLocation, refreshBalance]);
