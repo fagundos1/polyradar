@@ -146,7 +146,7 @@ export async function getAnalysisWithResults(analysisId: string) {
 }
 
 /**
- * Подписка на изменения анализа в реальном времени
+ * Подписка на изменения анализа в реальном времени (с fallback на polling)
  */
 export function subscribeToAnalysis(
   analysisId: string,
@@ -159,106 +159,107 @@ export function subscribeToAnalysis(
 ) {
   console.log('[subscribeToAnalysis] Setting up subscriptions for:', analysisId);
   
-  // Подписка на изменения в predictions
-  const predictionsChannel = supabase
-    .channel(`predictions:${analysisId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'model_predictions',
-        filter: `analysis_id=eq.${analysisId}`,
-      },
-      async (payload) => {
-        console.log('[subscribeToAnalysis] Predictions event received:', payload);
-        const { data } = await supabase
-          .from('model_predictions')
-          .select('*')
-          .eq('analysis_id', analysisId);
-        console.log('[subscribeToAnalysis] Predictions data:', data);
-        callback({ predictions: data || [] });
-      }
-    )
-    .subscribe();
+  let pollingInterval: NodeJS.Timeout | null = null;
+  let isUnsubscribed = false;
 
-  // Подписка на изменения в timeline
-  const timelineChannel = supabase
-    .channel(`timeline:${analysisId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'timelines',
-        filter: `analysis_id=eq.${analysisId}`,
-      },
-      async (payload) => {
-        console.log('[subscribeToAnalysis] Timeline event received:', payload);
-        const { data } = await supabase
-          .from('timelines')
-          .select('*')
-          .eq('analysis_id', analysisId)
-          .single();
-        console.log('[subscribeToAnalysis] Timeline data:', data);
-        callback({ timeline: data || undefined });
-      }
-    )
-    .subscribe();
-
-  // Подписка на изменения в insights
-  const insightsChannel = supabase
-    .channel(`insights:${analysisId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'insights',
-        filter: `analysis_id=eq.${analysisId}`,
-      },
-      async (payload) => {
-        console.log('[subscribeToAnalysis] Insights event received:', payload);
-        const { data } = await supabase
-          .from('insights')
-          .select('*')
-          .eq('analysis_id', analysisId)
-          .single();
-        console.log('[subscribeToAnalysis] Insights data:', data);
-        callback({ insights: data || undefined });
-      }
-    )
-    .subscribe();
-
-  // Подписка на изменения в analyses
-  const analysisChannel = supabase
-    .channel(`analysis:${analysisId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'analyses',
-        filter: `id=eq.${analysisId}`,
-      },
-      async () => {
-        const { data } = await supabase
-          .from('analyses')
-          .select('*')
-          .eq('id', analysisId)
-          .single();
-        callback({ analysis: data || undefined });
-      }
-    )
-    .subscribe();
-
-  // Возвращаем функцию для отписки
-  return () => {
-    predictionsChannel.unsubscribe();
-    timelineChannel.unsubscribe();
-    insightsChannel.unsubscribe();
-    analysisChannel.unsubscribe();
+  // Функция для обновления данных
+  const updateData = async () => {
+    if (isUnsubscribed) return;
+    
+    try {
+      console.log('[subscribeToAnalysis] Polling for updates...');
+      const data = await getAnalysisWithResults(analysisId);
+      callback({
+        predictions: data.predictions,
+        timeline: data.timeline,
+        insights: data.insights
+      });
+    } catch (error) {
+      console.error('[subscribeToAnalysis] Polling error:', error);
+    }
   };
+
+  // Настраиваем polling каждые 2 секунды
+  pollingInterval = setInterval(updateData, 2000);
+
+  // Попробуем также настроить real-time подписки
+  try {
+    // Подписка на изменения в predictions
+    const predictionsChannel = supabase
+      .channel(`predictions:${analysisId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'model_predictions',
+          filter: `analysis_id=eq.${analysisId}`,
+        },
+        async (payload) => {
+          console.log('[subscribeToAnalysis] Predictions event received:', payload);
+          await updateData();
+        }
+      )
+      .subscribe();
+
+    // Подписка на изменения в timeline
+    const timelineChannel = supabase
+      .channel(`timeline:${analysisId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'timelines',
+          filter: `analysis_id=eq.${analysisId}`,
+        },
+        async (payload) => {
+          console.log('[subscribeToAnalysis] Timeline event received:', payload);
+          await updateData();
+        }
+      )
+      .subscribe();
+
+    // Подписка на изменения в insights
+    const insightsChannel = supabase
+      .channel(`insights:${analysisId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'insights',
+          filter: `analysis_id=eq.${analysisId}`,
+        },
+        async (payload) => {
+          console.log('[subscribeToAnalysis] Insights event received:', payload);
+          await updateData();
+        }
+      )
+      .subscribe();
+
+    // Возвращаем функцию для отписки
+    return () => {
+      console.log('[subscribeToAnalysis] Unsubscribing...');
+      isUnsubscribed = true;
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+      predictionsChannel.unsubscribe();
+      timelineChannel.unsubscribe();
+      insightsChannel.unsubscribe();
+    };
+  } catch (error) {
+    console.error('[subscribeToAnalysis] Error setting up real-time subscriptions:', error);
+    // Если real-time не работает, используем только polling
+    return () => {
+      console.log('[subscribeToAnalysis] Unsubscribing (polling only)...');
+      isUnsubscribed = true;
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }
 }
 
 /**
