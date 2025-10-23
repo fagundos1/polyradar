@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const body = req.body;
     console.log('[Webhook] Received insights:', body);
 
-    const { analysis_id, status, risks, opportunities, trends, consensus, error: errorMsg } = body;
+    const { analysis_id, status, content, error: errorMsg } = body;
     
     if (!analysis_id || !status) {
       return res.status(400).json({ 
@@ -30,10 +30,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       raw_response: body,
     };
 
-    if (risks) insightsData.risks = risks;
-    if (opportunities) insightsData.opportunities = opportunities;
-    if (trends) insightsData.trends = trends;
-    if (consensus) insightsData.consensus = consensus;
+    // Handle new content structure
+    if (content && typeof content === 'object') {
+      // Store the entire content object in a JSON column
+      insightsData.content = content;
+      
+      // Also extract specific fields for backward compatibility
+      if (content.risks?.items) {
+        insightsData.risks = content.risks.items;
+      }
+      if (content.agreement) {
+        insightsData.consensus = `${content.agreement.title}: ${content.agreement.description}`;
+      }
+    }
+    
     if (errorMsg) insightsData.error = errorMsg;
 
     const { data, error } = await supabase
