@@ -48,16 +48,16 @@ export default async function handler(req, res) {
 
     console.log('Supabase connection successful');
 
-    // Create analysis record
-    const { data: analysis, error: analysisError } = await supabase
-      .from('analyses')
-      .insert({
-        user_id: user_id || null,
-        polymarket_url: event_url,
-        status: 'processing',
-      })
-      .select()
-      .single();
+           // Create analysis record
+           const { data: analysis, error: analysisError } = await supabase
+             .from('analyses')
+             .insert({
+               user_id: user_id || null,
+               polymarket_url: event_url,
+               status: 'analyzing',
+             })
+             .select()
+             .single();
 
     if (analysisError) {
       console.error('Error creating analysis:', analysisError);
