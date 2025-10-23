@@ -92,6 +92,8 @@ export async function createAnalysis(params: CreateAnalysisParams): Promise<stri
  * Получает анализ по ID со всеми связанными данными
  */
 export async function getAnalysisWithResults(analysisId: string) {
+  console.log('[getAnalysisWithResults] Fetching data for:', analysisId);
+  
   // Получаем основной анализ
   const { data: analysis, error: analysisError } = await supabase
     .from('analyses')
@@ -100,9 +102,11 @@ export async function getAnalysisWithResults(analysisId: string) {
     .single();
 
   if (analysisError) {
-    console.error('Error fetching analysis:', analysisError);
+    console.error('[getAnalysisWithResults] Error fetching analysis:', analysisError);
     throw new Error('Failed to fetch analysis');
   }
+
+  console.log('[getAnalysisWithResults] Analysis found:', analysis?.status);
 
   // Получаем предсказания моделей
   const { data: predictions, error: predictionsError } = await supabase
@@ -112,8 +116,10 @@ export async function getAnalysisWithResults(analysisId: string) {
     .order('model_name');
 
   if (predictionsError) {
-    console.error('Error fetching predictions:', predictionsError);
+    console.error('[getAnalysisWithResults] Error fetching predictions:', predictionsError);
   }
+
+  console.log('[getAnalysisWithResults] Predictions found:', predictions?.length || 0);
 
   // Получаем timeline
   const { data: timeline, error: timelineError } = await supabase
@@ -123,8 +129,10 @@ export async function getAnalysisWithResults(analysisId: string) {
     .single();
 
   if (timelineError && timelineError.code !== 'PGRST116') { // PGRST116 = not found
-    console.error('Error fetching timeline:', timelineError);
+    console.error('[getAnalysisWithResults] Error fetching timeline:', timelineError);
   }
+
+  console.log('[getAnalysisWithResults] Timeline found:', timeline?.status || 'not found');
 
   // Получаем insights
   const { data: insights, error: insightsError } = await supabase
@@ -134,15 +142,26 @@ export async function getAnalysisWithResults(analysisId: string) {
     .single();
 
   if (insightsError && insightsError.code !== 'PGRST116') {
-    console.error('Error fetching insights:', insightsError);
+    console.error('[getAnalysisWithResults] Error fetching insights:', insightsError);
   }
 
-  return {
+  console.log('[getAnalysisWithResults] Insights found:', insights?.status || 'not found');
+
+  const result = {
     analysis,
     predictions: predictions || [],
     timeline: timeline || null,
     insights: insights || null,
   };
+
+  console.log('[getAnalysisWithResults] Returning data:', {
+    analysisStatus: result.analysis?.status,
+    predictionsCount: result.predictions.length,
+    timelineStatus: result.timeline?.status,
+    insightsStatus: result.insights?.status
+  });
+
+  return result;
 }
 
 /**

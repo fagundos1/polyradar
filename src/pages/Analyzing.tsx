@@ -12,6 +12,9 @@ export default function Analyzing() {
   // Получаем analysisId из URL
   const searchParams = new URLSearchParams(window.location.search);
   const analysisId = searchParams.get('id');
+  
+  console.log('[Analyzing] Current URL:', window.location.href);
+  console.log('[Analyzing] Analysis ID from URL:', analysisId);
 
   const [predictions, setPredictions] = useState<ModelPrediction[]>([]);
   const [timeline, setTimeline] = useState<Timeline | null>(null);
