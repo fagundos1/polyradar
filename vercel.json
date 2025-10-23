@@ -1,5 +1,6 @@
 {
-  "buildCommand": "pnpm install --frozen-lockfile && pnpm run build",
-  "installCommand": "echo 'Skipping install, using prebuilt output'"
+  "buildCommand": "pnpm run build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": null
 }
 
