@@ -1,4 +1,4 @@
-# Ignore API directory to prevent pnpm install errors
+# Ignore old API directory structure
 api/
 
 # Other ignores
