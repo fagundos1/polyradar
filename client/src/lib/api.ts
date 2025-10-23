@@ -1,19 +1,13 @@
 import { supabase } from './supabase';
-import type { Analysis, Prediction, TimelineEvent, Insight } from './supabase';
+import type { Analysis, ModelPrediction, Timeline, Insights } from './supabase';
 
 export interface CreateAnalysisParams {
   walletAddress: string;
   polymarketUrl: string;
 }
 
-export interface AnalysisResult {
-  predictions: Prediction[];
-  timeline: TimelineEvent[];
-  insights: Insight[];
-}
-
 /**
- * Создает новый анализ и списывает токены
+ * Создает новый анализ и запускает обработку через webhooks
  */
 export async function createAnalysis(params: CreateAnalysisParams): Promise<string> {
   const { walletAddress, polymarketUrl } = params;
@@ -47,39 +41,25 @@ export async function createAnalysis(params: CreateAnalysisParams): Promise<stri
     userId = user.id;
   }
 
-  // Временно отключено для тестирования
-  // Проверяем баланс
-  // if (user.radar_balance < 100) {
-  //   throw new Error('Insufficient RADAR balance');
-  // }
-
-  // Списываем токены
-  // const { error: updateError } = await supabase
-  //   .from('users')
-  //   .update({ radar_balance: user.radar_balance - 100 })
-  //   .eq('wallet_address', walletAddress);
-
-  // if (updateError) {
-  //   throw new Error('Failed to deduct tokens');
-  // }
-
-  // Создаем запись анализа
-  const { data: analysis, error: analysisError } = await supabase
-    .from('analyses')
-    .insert({
+  // Вызываем API endpoint для создания анализа и запуска webhooks
+  const response = await fetch('/api/analyze', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      event_url: polymarketUrl,
       user_id: userId,
-      polymarket_url: polymarketUrl,
-      status: 'pending',
-      tokens_spent: 100,
-    })
-    .select()
-    .single();
+    }),
+  });
 
-  if (analysisError || !analysis) {
-    console.error('Error creating analysis:', analysisError);
-    throw new Error('Failed to create analysis');
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to start analysis');
   }
 
+  const result = await response.json();
+  
   // Создаем транзакцию
   await supabase.from('transactions').insert({
     user_id: userId,
@@ -88,97 +68,178 @@ export async function createAnalysis(params: CreateAnalysisParams): Promise<stri
     description: `Analysis for ${polymarketUrl}`,
   });
 
-  // Отправляем webhook на Make.com для анализа
-  try {
-    const webhookUrl = 'https://hook.us2.make.com/mio87mwc00gx78v2wo1ex41xwzhrmpd5';
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        polymarket_url: polymarketUrl,
-        analysis_id: analysis.id,
-      }),
-    });
-
-    if (!response.ok) {
-      console.error('Failed to send webhook:', response.statusText);
-    }
-  } catch (error) {
-    console.error('Error sending webhook:', error);
-    // Не прерываем выполнение, если webhook не отправился
-  }
-
-  return analysis.id;
+  return result.analysis_id;
 }
 
 /**
- * Обновляет статус анализа
+ * Получает анализ по ID со всеми связанными данными
  */
-export async function updateAnalysisStatus(
-  analysisId: string,
-  status: 'analyzing' | 'completed' | 'failed'
-): Promise<void> {
-  const { error } = await supabase
-    .from('analyses')
-    .update({ 
-      status,
-      ...(status === 'completed' || status === 'failed' ? { completed_at: new Date().toISOString() } : {})
-    })
-    .eq('id', analysisId);
-
-  if (error) {
-    throw new Error('Failed to update analysis status');
-  }
-}
-
-/**
- * Сохраняет результаты анализа
- */
-export async function saveAnalysisResults(
-  analysisId: string,
-  results: AnalysisResult
-): Promise<void> {
-  const { error } = await supabase
-    .from('analyses')
-    .update({
-      status: 'completed',
-      predictions: results.predictions,
-      timeline: results.timeline,
-      insights: results.insights,
-      completed_at: new Date().toISOString(),
-    })
-    .eq('id', analysisId);
-
-  if (error) {
-    throw new Error('Failed to save analysis results');
-  }
-}
-
-/**
- * Получает анализ по ID
- */
-export async function getAnalysis(analysisId: string): Promise<Analysis | null> {
-  const { data, error } = await supabase
+export async function getAnalysisWithResults(analysisId: string) {
+  // Получаем основной анализ
+  const { data: analysis, error: analysisError } = await supabase
     .from('analyses')
     .select('*')
     .eq('id', analysisId)
     .single();
 
-  if (error) {
-    console.error('Error fetching analysis:', error);
-    return null;
+  if (analysisError) {
+    console.error('Error fetching analysis:', analysisError);
+    throw new Error('Failed to fetch analysis');
   }
 
-  return data;
+  // Получаем предсказания моделей
+  const { data: predictions, error: predictionsError } = await supabase
+    .from('model_predictions')
+    .select('*')
+    .eq('analysis_id', analysisId)
+    .order('model_name');
+
+  if (predictionsError) {
+    console.error('Error fetching predictions:', predictionsError);
+  }
+
+  // Получаем timeline
+  const { data: timeline, error: timelineError } = await supabase
+    .from('timelines')
+    .select('*')
+    .eq('analysis_id', analysisId)
+    .single();
+
+  if (timelineError && timelineError.code !== 'PGRST116') { // PGRST116 = not found
+    console.error('Error fetching timeline:', timelineError);
+  }
+
+  // Получаем insights
+  const { data: insights, error: insightsError } = await supabase
+    .from('insights')
+    .select('*')
+    .eq('analysis_id', analysisId)
+    .single();
+
+  if (insightsError && insightsError.code !== 'PGRST116') {
+    console.error('Error fetching insights:', insightsError);
+  }
+
+  return {
+    analysis,
+    predictions: predictions || [],
+    timeline: timeline || null,
+    insights: insights || null,
+  };
+}
+
+/**
+ * Подписка на изменения анализа в реальном времени
+ */
+export function subscribeToAnalysis(
+  analysisId: string,
+  callback: (data: {
+    analysis?: Analysis;
+    predictions?: ModelPrediction[];
+    timeline?: Timeline;
+    insights?: Insights;
+  }) => void
+) {
+  // Подписка на изменения в predictions
+  const predictionsChannel = supabase
+    .channel(`predictions:${analysisId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'model_predictions',
+        filter: `analysis_id=eq.${analysisId}`,
+      },
+      async () => {
+        const { data } = await supabase
+          .from('model_predictions')
+          .select('*')
+          .eq('analysis_id', analysisId);
+        callback({ predictions: data || [] });
+      }
+    )
+    .subscribe();
+
+  // Подписка на изменения в timeline
+  const timelineChannel = supabase
+    .channel(`timeline:${analysisId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'timelines',
+        filter: `analysis_id=eq.${analysisId}`,
+      },
+      async () => {
+        const { data } = await supabase
+          .from('timelines')
+          .select('*')
+          .eq('analysis_id', analysisId)
+          .single();
+        callback({ timeline: data || undefined });
+      }
+    )
+    .subscribe();
+
+  // Подписка на изменения в insights
+  const insightsChannel = supabase
+    .channel(`insights:${analysisId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'insights',
+        filter: `analysis_id=eq.${analysisId}`,
+      },
+      async () => {
+        const { data } = await supabase
+          .from('insights')
+          .select('*')
+          .eq('analysis_id', analysisId)
+          .single();
+        callback({ insights: data || undefined });
+      }
+    )
+    .subscribe();
+
+  // Подписка на изменения в analyses
+  const analysisChannel = supabase
+    .channel(`analysis:${analysisId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'analyses',
+        filter: `id=eq.${analysisId}`,
+      },
+      async () => {
+        const { data } = await supabase
+          .from('analyses')
+          .select('*')
+          .eq('id', analysisId)
+          .single();
+        callback({ analysis: data || undefined });
+      }
+    )
+    .subscribe();
+
+  // Возвращаем функцию для отписки
+  return () => {
+    predictionsChannel.unsubscribe();
+    timelineChannel.unsubscribe();
+    insightsChannel.unsubscribe();
+    analysisChannel.unsubscribe();
+  };
 }
 
 /**
  * Получает все анализы пользователя
  */
 export async function getUserAnalyses(walletAddress: string): Promise<Analysis[]> {
-  // Сначала получаем user_id
   const { data: user, error: userError } = await supabase
     .from('users')
     .select('id')
@@ -201,37 +262,5 @@ export async function getUserAnalyses(walletAddress: string): Promise<Analysis[]
   }
 
   return data || [];
-}
-
-/**
- * Возвращает токены пользователю (в случае ошибки анализа)
- */
-export async function refundTokens(walletAddress: string, amount: number): Promise<void> {
-  const { data: user, error: userError } = await supabase
-    .from('users')
-    .select('*')
-    .eq('wallet_address', walletAddress)
-    .single();
-
-  if (userError || !user) {
-    throw new Error('User not found');
-  }
-
-  const { error: updateError } = await supabase
-    .from('users')
-    .update({ radar_balance: user.radar_balance + amount })
-    .eq('wallet_address', walletAddress);
-
-  if (updateError) {
-    throw new Error('Failed to refund tokens');
-  }
-
-  // Создаем транзакцию возврата
-  await supabase.from('transactions').insert({
-    user_id: user.id,
-    type: 'refund',
-    amount: amount,
-    description: 'Refund for failed analysis',
-  });
 }
 
