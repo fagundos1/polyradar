@@ -53,7 +53,7 @@ export default async function handler(req, res) {
       .from('analyses')
       .insert({
         user_id: user_id || null,
-        event_url: event_url,
+        polymarket_url: event_url,
         status: 'processing',
       })
       .select()
