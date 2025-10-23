@@ -93,7 +93,25 @@ export async function createAnalysis(params: CreateAnalysisParams): Promise<stri
  */
 export async function getAnalysisWithResults(analysisId: string) {
   console.log('[getAnalysisWithResults] Fetching data for:', analysisId);
-  
+
+  // Test Supabase connection first
+  try {
+    const { data: testData, error: testError } = await supabase
+      .from('analyses')
+      .select('count')
+      .limit(1);
+    
+    if (testError) {
+      console.error('[getAnalysisWithResults] Supabase connection test failed:', testError);
+      throw new Error('Supabase connection failed');
+    }
+    
+    console.log('[getAnalysisWithResults] Supabase connection successful');
+  } catch (error) {
+    console.error('[getAnalysisWithResults] Supabase connection error:', error);
+    throw error;
+  }
+
   // Получаем основной анализ
   const { data: analysis, error: analysisError } = await supabase
     .from('analyses')
