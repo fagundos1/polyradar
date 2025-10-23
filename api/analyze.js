@@ -24,8 +24,8 @@ export default async function handler(req, res) {
 
     // Initialize Supabase client
     const supabase = createClient(
-      process.env.VITE_SUPABASE_URL,
-      process.env.VITE_SUPABASE_ANON_KEY
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY
     );
 
     // Create analysis record
