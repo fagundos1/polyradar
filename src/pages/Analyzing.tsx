@@ -24,8 +24,11 @@ export default function Analyzing() {
       return;
     }
 
+    console.log('[Analyzing] Subscribing to analysis:', analysisId);
+
     // Загружаем начальные данные
     getAnalysisWithResults(analysisId).then((data) => {
+      console.log('[Analyzing] Initial data loaded:', { predictions: data.predictions.length, timeline: data.timeline?.status, insights: data.insights?.status });
       setPredictions(data.predictions);
       setTimeline(data.timeline);
       setInsights(data.insights);
@@ -33,18 +36,23 @@ export default function Analyzing() {
 
     // Подписываемся на обновления
     const unsubscribe = subscribeToAnalysis(analysisId, (update) => {
+      console.log('[Analyzing] Received update:', update);
       if (update.predictions) {
+        console.log('[Analyzing] Updating predictions:', update.predictions.length);
         setPredictions(update.predictions);
       }
       if (update.timeline) {
+        console.log('[Analyzing] Updating timeline:', update.timeline.status);
         setTimeline(update.timeline);
       }
       if (update.insights) {
+        console.log('[Analyzing] Updating insights:', update.insights.status);
         setInsights(update.insights);
       }
     });
 
     return () => {
+      console.log('[Analyzing] Unsubscribing from analysis:', analysisId);
       unsubscribe();
     };
   }, [analysisId, setLocation]);

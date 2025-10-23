@@ -157,6 +157,8 @@ export function subscribeToAnalysis(
     insights?: Insights;
   }) => void
 ) {
+  console.log('[subscribeToAnalysis] Setting up subscriptions for:', analysisId);
+  
   // Подписка на изменения в predictions
   const predictionsChannel = supabase
     .channel(`predictions:${analysisId}`)
@@ -168,11 +170,13 @@ export function subscribeToAnalysis(
         table: 'model_predictions',
         filter: `analysis_id=eq.${analysisId}`,
       },
-      async () => {
+      async (payload) => {
+        console.log('[subscribeToAnalysis] Predictions event received:', payload);
         const { data } = await supabase
           .from('model_predictions')
           .select('*')
           .eq('analysis_id', analysisId);
+        console.log('[subscribeToAnalysis] Predictions data:', data);
         callback({ predictions: data || [] });
       }
     )
@@ -189,12 +193,14 @@ export function subscribeToAnalysis(
         table: 'timelines',
         filter: `analysis_id=eq.${analysisId}`,
       },
-      async () => {
+      async (payload) => {
+        console.log('[subscribeToAnalysis] Timeline event received:', payload);
         const { data } = await supabase
           .from('timelines')
           .select('*')
           .eq('analysis_id', analysisId)
           .single();
+        console.log('[subscribeToAnalysis] Timeline data:', data);
         callback({ timeline: data || undefined });
       }
     )
@@ -211,12 +217,14 @@ export function subscribeToAnalysis(
         table: 'insights',
         filter: `analysis_id=eq.${analysisId}`,
       },
-      async () => {
+      async (payload) => {
+        console.log('[subscribeToAnalysis] Insights event received:', payload);
         const { data } = await supabase
           .from('insights')
           .select('*')
           .eq('analysis_id', analysisId)
           .single();
+        console.log('[subscribeToAnalysis] Insights data:', data);
         callback({ insights: data || undefined });
       }
     )
