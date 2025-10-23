@@ -103,7 +103,7 @@ export default async function handler(req, res) {
             body: JSON.stringify({
               analysis_id,
               event_url: event_url,
-              callback_url: `https://polyradar.io/api/webhooks/predictions/${model}`,
+              callback_url: `https://www.polyradar.io/api/webhooks/predictions/${model}`,
             }),
           }).catch(err => console.error(`Error triggering ${model}:`, err))
         );
@@ -118,7 +118,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           analysis_id,
           event_url: event_url,
-          callback_url: 'https://polyradar.io/api/webhooks/timeline',
+          callback_url: 'https://www.polyradar.io/api/webhooks/timeline',
         }),
       }).catch(err => console.error('Error triggering timeline:', err))
     );
@@ -131,7 +131,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           analysis_id,
           event_url: event_url,
-          callback_url: 'https://polyradar.io/api/webhooks/insights',
+          callback_url: 'https://www.polyradar.io/api/webhooks/insights',
         }),
       }).catch(err => console.error('Error triggering insights:', err))
     );
