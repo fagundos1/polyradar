@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
 const WEBHOOK_URLS = {
   model1: 'https://hook.us2.make.com/mio87mwc00gx78v2wo1ex41xwzhrmpd5',
@@ -9,7 +9,7 @@ const WEBHOOK_URLS = {
   insights: 'https://hook.us2.make.com/sv2tup1yq1hddwnolhhngv67f8jttynh',
 };
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -104,7 +104,7 @@ export default async function handler(req, res) {
     webhookPromises.push(
       fetch(WEBHOOK_URLS.insights, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type: application/json' },
         body: JSON.stringify({
           analysis_id,
           event_url,
@@ -125,5 +125,5 @@ export default async function handler(req, res) {
     console.error('Error in analyze endpoint:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
-}
+};
 
