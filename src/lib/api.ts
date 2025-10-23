@@ -186,8 +186,14 @@ export function subscribeToAnalysis(
     if (isUnsubscribed) return;
     
     try {
-      console.log('[subscribeToAnalysis] Polling for updates...');
+      console.log('[subscribeToAnalysis] Polling for updates...', analysisId);
       const data = await getAnalysisWithResults(analysisId);
+      console.log('[subscribeToAnalysis] Polling data received:', {
+        predictionsCount: data.predictions.length,
+        completedPredictions: data.predictions.filter(p => p.status === 'success').length,
+        timelineStatus: data.timeline?.status,
+        insightsStatus: data.insights?.status
+      });
       callback({
         predictions: data.predictions,
         timeline: data.timeline,
@@ -200,6 +206,9 @@ export function subscribeToAnalysis(
 
   // Настраиваем polling каждые 2 секунды
   pollingInterval = setInterval(updateData, 2000);
+  
+  // Вызываем updateData немедленно
+  updateData();
 
   // Попробуем также настроить real-time подписки
   try {
