@@ -27,10 +27,10 @@ export interface User {
 
 export interface Analysis {
   id: string;
-  event_url: string;
+  polymarket_url: string;
   event_title: string | null;
   event_data: any | null;
-  status: 'processing' | 'completed' | 'failed';
+  status: 'pending' | 'analyzing' | 'completed' | 'failed';
   created_at: string;
   completed_at: string | null;
   user_id: string | null;
