@@ -22,11 +22,31 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'event_url is required' });
     }
 
+    // Debug environment variables
+    console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET' : 'NOT SET');
+    console.log('SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT SET');
+
     // Initialize Supabase client
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_ANON_KEY
     );
+
+    // Test Supabase connection first
+    const { data: testData, error: testError } = await supabase
+      .from('analyses')
+      .select('count')
+      .limit(1);
+
+    if (testError) {
+      console.error('Supabase connection test failed:', testError);
+      return res.status(500).json({ 
+        error: 'Supabase connection failed', 
+        details: testError.message 
+      });
+    }
+
+    console.log('Supabase connection successful');
 
     // Create analysis record
     const { data: analysis, error: analysisError } = await supabase
@@ -41,7 +61,10 @@ export default async function handler(req, res) {
 
     if (analysisError) {
       console.error('Error creating analysis:', analysisError);
-      return res.status(500).json({ error: 'Failed to create analysis' });
+      return res.status(500).json({ 
+        error: 'Failed to create analysis', 
+        details: analysisError.message 
+      });
     }
 
     const analysis_id = analysis.id;
