@@ -1,4 +1,4 @@
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 const WEBHOOK_URLS = {
   model1: 'https://hook.us2.make.com/mio87mwc00gx78v2wo1ex41xwzhrmpd5',
@@ -9,17 +9,17 @@ const WEBHOOK_URLS = {
   insights: 'https://hook.us2.make.com/sv2tup1yq1hddwnolhhngv67f8jttynh',
 };
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { event_url, user_id } = req.body;
+    const { polymarket_url, user_id } = req.body;
 
-    if (!event_url) {
-      return res.status(400).json({ error: 'event_url is required' });
+    if (!polymarket_url) {
+      return res.status(400).json({ error: 'polymarket_url is required' });
     }
 
     // Initialize Supabase client
@@ -33,7 +33,7 @@ module.exports = async function handler(req, res) {
       .from('analyses')
       .insert({
         user_id: user_id || null,
-        event_url,
+        event_url: polymarket_url,
         status: 'processing',
       })
       .select()
@@ -79,7 +79,7 @@ module.exports = async function handler(req, res) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               analysis_id,
-              event_url,
+              event_url: polymarket_url,
               callback_url: `https://polyradar.io/api/webhooks/predictions/${model}`,
             }),
           }).catch(err => console.error(`Error triggering ${model}:`, err))
@@ -94,7 +94,7 @@ module.exports = async function handler(req, res) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           analysis_id,
-          event_url,
+          event_url: polymarket_url,
           callback_url: 'https://polyradar.io/api/webhooks/timeline',
         }),
       }).catch(err => console.error('Error triggering timeline:', err))
@@ -107,7 +107,7 @@ module.exports = async function handler(req, res) {
         headers: { 'Content-Type: application/json' },
         body: JSON.stringify({
           analysis_id,
-          event_url,
+          event_url: polymarket_url,
           callback_url: 'https://polyradar.io/api/webhooks/insights',
         }),
       }).catch(err => console.error('Error triggering insights:', err))
