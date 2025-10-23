@@ -355,10 +355,54 @@ export default function Results() {
             <h2 className="text-3xl font-bold mb-6">KEY INSIGHTS</h2>
             
             {insights && insights.status === 'success' && insights.content ? (
-              <div className="rounded-2xl bg-card/50 border border-border/50 p-6">
-                <div className="prose prose-invert max-w-none">
-                  <p className="text-muted-foreground leading-relaxed">{insights.content}</p>
-                </div>
+              <div className="space-y-4">
+                {/* Agreement */}
+                {insights.content.agreement && (
+                  <div className="rounded-2xl bg-purple-950/30 border-l-4 border-purple-500 p-6">
+                    <div className="flex items-start gap-4">
+                      <CheckCircle className="h-6 w-6 text-purple-400 flex-shrink-0 mt-1" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-white mb-2">{insights.content.agreement.title}</h3>
+                        <p className="text-muted-foreground">{insights.content.agreement.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Divergence */}
+                {insights.content.divergence && (
+                  <div className="rounded-2xl bg-red-950/20 border-l-4 border-red-500 p-6">
+                    <div className="flex items-start gap-4">
+                      <svg className="h-6 w-6 text-red-400 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white mb-2">{insights.content.divergence.title}</h3>
+                        <p className="text-muted-foreground">{insights.content.divergence.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Risk Factors */}
+                {insights.content.risks?.items && insights.content.risks.items.length > 0 && (
+                  <div className="rounded-2xl bg-orange-950/20 border-l-4 border-orange-500 p-6">
+                    <div className="flex items-start gap-4">
+                      <TrendingUp className="h-6 w-6 text-orange-400 flex-shrink-0 mt-1" />
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-white mb-3">{insights.content.risks.title}</h3>
+                        <ul className="space-y-2">
+                          {insights.content.risks.items.map((risk: string, index: number) => (
+                            <li key={index} className="text-muted-foreground flex items-start gap-2">
+                              <span className="text-orange-400 mt-1">•</span>
+                              <span>{risk}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : insights?.status === 'processing' ? (
               <div className="p-8 rounded-xl bg-card border border-border text-center">

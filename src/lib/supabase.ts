@@ -74,6 +74,20 @@ export interface Insights {
   id: string;
   analysis_id: string;
   status: 'pending' | 'processing' | 'success' | 'error' | 'timeout';
+  content?: {
+    agreement?: {
+      title: string;
+      description: string;
+    };
+    divergence?: {
+      title: string;
+      description: string;
+    } | null;
+    risks?: {
+      title: string;
+      items: string[];
+    };
+  };
   risks: any[];
   opportunities: any[];
   trends: any[];
