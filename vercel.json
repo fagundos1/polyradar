@@ -1,16 +1,5 @@
 {
-  "buildCommand": "pnpm install --frozen-lockfile && pnpm run build",
-  "outputDirectory": "dist",
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    }
-  ]
+  "buildCommand": "pnpm install --frozen-lockfile && pnpm run build && mkdir -p .vercel/output/static && cp -r dist/* .vercel/output/static/ && mkdir -p .vercel/output/functions/api && cp -r api/*.js .vercel/output/functions/api/ 2>/dev/null || true",
+  "framework": null
 }
 
