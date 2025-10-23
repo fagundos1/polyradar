@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import Header from "@/components/Header";
-import { TrendingUp, Calendar, Lightbulb, ChevronDown, ChevronUp, CheckCircle, AlertTriangle, Loader2, ExternalLink } from "lucide-react";
+import { TrendingUp, Calendar, Lightbulb, ChevronDown, ChevronUp, CheckCircle, XCircle, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDynamic } from "@/hooks/useDynamic";
 import { getAnalysisWithResults, subscribeToAnalysis } from "@/lib/api";
@@ -72,26 +72,59 @@ export default function Results() {
     });
   };
 
-  const getOutcomeColor = (outcome: string | null) => {
-    if (!outcome) return "text-gray-400";
-    if (outcome === "YES") return "text-green-400";
-    if (outcome === "NO") return "text-red-400";
-    return "text-yellow-400";
-  };
-
   const getModelIcon = (modelName: string) => {
     switch (modelName) {
       case 'model1':
-        return <div className="w-6 h-6 bg-purple-500 rounded flex items-center justify-center text-white text-xs font-bold">A</div>;
+        return (
+          <div className="w-7 h-7 bg-purple-600 rounded flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+        );
       case 'model2':
-        return <Lightbulb className="h-5 w-5 text-purple-400" />;
+        return (
+          <div className="w-7 h-7 bg-purple-600 rounded flex items-center justify-center">
+            <Lightbulb className="h-4 w-4 text-white" />
+          </div>
+        );
       case 'model3':
-        return <div className="w-6 h-6 border border-purple-400 rounded flex items-center justify-center text-purple-400 text-xs">★</div>;
+        return (
+          <div className="w-7 h-7 border-2 border-purple-500 rounded flex items-center justify-center">
+            <svg className="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </div>
+        );
       case 'model4':
-        return <div className="w-6 h-6 bg-purple-500 rounded flex items-center justify-center text-white text-xs">⚡</div>;
+        return (
+          <div className="w-7 h-7 bg-purple-600 rounded flex items-center justify-center">
+            <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/>
+            </svg>
+          </div>
+        );
       default:
         return <TrendingUp className="h-5 w-5 text-purple-400" />;
     }
+  };
+
+  const getModelLabel = (modelName: string) => {
+    switch (modelName) {
+      case 'model1': return 'Model A';
+      case 'model2': return 'Model B';
+      case 'model3': return 'Model C';
+      case 'model4': return 'Model D';
+      default: return modelName;
+    }
+  };
+
+  const getConfidenceBarColor = (confidence: number) => {
+    if (confidence >= 80) return 'bg-purple-500';
+    if (confidence >= 70) return 'bg-orange-500';
+    return 'bg-orange-600';
   };
 
   if (isLoading) {
@@ -122,11 +155,11 @@ export default function Results() {
             <TrendingUp className="h-5 w-5 text-purple-400" />
             <span className="font-medium">Predictions</span>
           </div>
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-card/50 transition-colors">
+          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-card/50 transition-colors cursor-pointer">
             <Calendar className="h-5 w-5 text-muted-foreground" />
             <span className="text-muted-foreground">Timeline</span>
           </div>
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-card/50 transition-colors">
+          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-card/50 transition-colors cursor-pointer">
             <Lightbulb className="h-5 w-5 text-muted-foreground" />
             <span className="text-muted-foreground">Key Insights</span>
           </div>
@@ -152,87 +185,125 @@ export default function Results() {
                 No predictions available yet
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="rounded-2xl bg-card/50 border border-border/50 overflow-hidden">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-3 px-4 font-medium text-muted-foreground">Model</th>
-                      <th className="text-left py-3 px-4 font-medium text-muted-foreground">Outcome</th>
-                      <th className="text-left py-3 px-4 font-medium text-muted-foreground">Conf</th>
-                      <th className="text-left py-3 px-4 font-medium text-muted-foreground">Reasoning</th>
-                      <th className="text-left py-3 px-4 font-medium text-muted-foreground">Sources</th>
+                    <tr className="border-b border-border/50">
+                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Model</th>
+                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Outcome</th>
+                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Conf</th>
+                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Reasoning</th>
+                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Sources</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {predictions.map((prediction) => (
-                      <tr key={prediction.id} className="border-b border-border/50">
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-3">
-                            {getModelIcon(prediction.model_name)}
-                            <span className="font-medium">{prediction.model_name}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          {prediction.status === 'success' ? (
-                            <div className="flex items-center gap-2">
-                              {prediction.outcome === 'YES' ? (
-                                <>
-                                  <CheckCircle className="h-4 w-4 text-green-400" />
-                                  <span className="text-green-400 font-medium">YES</span>
-                                </>
-                              ) : prediction.outcome === 'NO' ? (
-                                <>
-                                  <AlertTriangle className="h-4 w-4 text-red-400" />
-                                  <span className="text-red-400 font-medium">NO</span>
-                                </>
-                              ) : (
-                                <span className="text-yellow-400 font-medium">{prediction.outcome}</span>
-                              )}
+                    {predictions.map((prediction, index) => (
+                      <>
+                        <tr key={prediction.id} className={index < predictions.length - 1 ? "border-b border-border/30" : ""}>
+                          <td className="py-5 px-6">
+                            <div className="flex items-center gap-3">
+                              {getModelIcon(prediction.model_name)}
+                              <span className="font-medium">{getModelLabel(prediction.model_name)}</span>
                             </div>
-                          ) : (
-                            <span className="text-muted-foreground">Pending...</span>
-                          )}
-                        </td>
-                        <td className="py-4 px-4">
-                          {prediction.status === 'success' ? (
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{prediction.confidence_percent}%</span>
-                              <div className="w-16 h-2 bg-gray-800 rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-purple-500 transition-all duration-300"
-                                  style={{ width: `${prediction.confidence_percent}%` }}
-                                />
+                          </td>
+                          <td className="py-5 px-6">
+                            {prediction.status === 'success' ? (
+                              <div className="flex items-center gap-2">
+                                {prediction.outcome === 'YES' ? (
+                                  <>
+                                    <CheckCircle className="h-5 w-5 text-green-400" />
+                                    <span className="text-green-400 font-semibold">YES</span>
+                                  </>
+                                ) : prediction.outcome === 'NO' ? (
+                                  <>
+                                    <XCircle className="h-5 w-5 text-red-400" />
+                                    <span className="text-red-400 font-semibold">NO</span>
+                                  </>
+                                ) : (
+                                  <span className="text-yellow-400 font-semibold">{prediction.outcome}</span>
+                                )}
                               </div>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </td>
-                        <td className="py-4 px-4">
-                          {prediction.status === 'success' && prediction.reasoning ? (
-                            <button
-                              onClick={() => togglePrediction(prediction.model_name)}
-                              className="text-purple-400 hover:text-purple-300 flex items-center gap-1"
-                            >
-                              View Details
-                              {expandedPredictions.has(prediction.model_name) ? (
-                                <ChevronUp className="h-4 w-4" />
-                              ) : (
-                                <ChevronDown className="h-4 w-4" />
-                              )}
-                            </button>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </td>
-                        <td className="py-4 px-4">
-                          {prediction.status === 'success' ? (
-                            <span className="font-medium">{prediction.sources_count || 0}</span>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </td>
-                      </tr>
+                            ) : prediction.status === 'processing' ? (
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span className="text-sm">Processing...</span>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">Pending...</span>
+                            )}
+                          </td>
+                          <td className="py-5 px-6">
+                            {prediction.status === 'success' && prediction.confidence_percent ? (
+                              <div className="flex items-center gap-3">
+                                <span className="font-semibold text-base">{prediction.confidence_percent}%</span>
+                                <div className="w-20 h-2 bg-gray-800 rounded-full overflow-hidden">
+                                  <div 
+                                    className={`h-full transition-all duration-300 ${getConfidenceBarColor(prediction.confidence_percent)}`}
+                                    style={{ width: `${prediction.confidence_percent}%` }}
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </td>
+                          <td className="py-5 px-6">
+                            {prediction.status === 'success' && prediction.reasoning ? (
+                              <button
+                                onClick={() => togglePrediction(prediction.model_name)}
+                                className="text-purple-400 hover:text-purple-300 flex items-center gap-1 font-medium"
+                              >
+                                View Details
+                                {expandedPredictions.has(prediction.model_name) ? (
+                                  <ChevronUp className="h-4 w-4" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4" />
+                                )}
+                              </button>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </td>
+                          <td className="py-5 px-6">
+                            {prediction.status === 'success' ? (
+                              <span className="font-semibold">{prediction.sources_count || 0}</span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </td>
+                        </tr>
+                        {expandedPredictions.has(prediction.model_name) && prediction.reasoning && (
+                          <tr key={`${prediction.id}-details`}>
+                            <td colSpan={5} className="px-6 py-4 bg-card/30">
+                              <div className="space-y-3">
+                                <div>
+                                  <h4 className="font-semibold text-sm text-purple-400 mb-2">Reasoning</h4>
+                                  <p className="text-sm text-muted-foreground leading-relaxed">{prediction.reasoning}</p>
+                                </div>
+                                {prediction.sources && prediction.sources.length > 0 && (
+                                  <div>
+                                    <h4 className="font-semibold text-sm text-purple-400 mb-2">Sources</h4>
+                                    <div className="space-y-1">
+                                      {prediction.sources.map((source: string, idx: number) => (
+                                        <a 
+                                          key={idx}
+                                          href={source}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                                        >
+                                          <ExternalLink className="h-3 w-3" />
+                                          {source}
+                                        </a>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
                     ))}
                   </tbody>
                 </table>
@@ -244,95 +315,65 @@ export default function Results() {
           <div>
             <h2 className="text-3xl font-bold mb-6">TIMELINE</h2>
             
-            <div className="relative">
-              <div className="h-1 bg-purple-500 rounded-full"></div>
-              <div className="flex justify-between mt-4">
-                <div className="text-center">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full mx-auto mb-2"></div>
-                  <div className="text-sm font-medium">2025-10-01</div>
-                  <div className="text-xs text-muted-foreground">News</div>
-                </div>
-                <div className="text-center">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full mx-auto mb-2"></div>
-                  <div className="text-sm font-medium">2025-10-15</div>
-                  <div className="text-xs text-muted-foreground">Event</div>
-                </div>
-                <div className="text-center">
-                  <div className="w-3 h-3 bg-red-500 rounded-full mx-auto mb-2"></div>
-                  <div className="text-sm font-medium">2025-10-21</div>
-                  <div className="text-xs text-muted-foreground">Latest</div>
+            {timeline && timeline.status === 'success' && timeline.events ? (
+              <div className="space-y-6">
+                <div className="relative">
+                  {/* Timeline line */}
+                  <div className="absolute top-6 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-gray-500 to-red-500 rounded-full"></div>
+                  
+                  {/* Timeline points */}
+                  <div className="relative flex justify-between">
+                    {timeline.events.map((event: any, index: number) => {
+                      const colors = ['purple', 'gray', 'red'];
+                      const color = colors[index % colors.length];
+                      
+                      return (
+                        <div key={index} className="flex flex-col items-center">
+                          <div className="text-sm font-medium mb-2">{event.date}</div>
+                          <div className={`w-4 h-4 rounded-full bg-${color}-500 border-4 border-background relative z-10`}></div>
+                          <div className="text-sm text-muted-foreground mt-2">{event.label}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : timeline?.status === 'processing' ? (
+              <div className="p-8 rounded-xl bg-card border border-border text-center">
+                <Loader2 className="h-6 w-6 animate-spin text-purple-400 mx-auto mb-2" />
+                <p className="text-muted-foreground">Processing timeline...</p>
+              </div>
+            ) : (
+              <div className="p-8 rounded-xl bg-card border border-border text-center text-muted-foreground">
+                Timeline not available yet
+              </div>
+            )}
           </div>
 
           {/* KEY INSIGHTS Section */}
           <div>
             <h2 className="text-3xl font-bold mb-6">KEY INSIGHTS</h2>
             
-            <div className="space-y-4">
-              {!insights || insights.status === 'pending' || insights.status === 'processing' ? (
-                <div className="p-8 rounded-xl bg-card border border-border text-center text-muted-foreground">
-                  <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-                  Generating insights...
+            {insights && insights.status === 'success' && insights.content ? (
+              <div className="rounded-2xl bg-card/50 border border-border/50 p-6">
+                <div className="prose prose-invert max-w-none">
+                  <p className="text-muted-foreground leading-relaxed">{insights.content}</p>
                 </div>
-              ) : insights.status === 'error' ? (
-                <div className="p-8 rounded-xl bg-card border border-border text-center text-red-400">
-                  Failed to generate insights
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {insights.consensus && (
-                    <div className="p-6 rounded-xl bg-card border border-border">
-                      <div className="flex items-start gap-3">
-                        <CheckCircle className="h-6 w-6 text-green-400 flex-shrink-0 mt-1" />
-                        <div>
-                          <div className="font-semibold text-lg">Consensus</div>
-                          <div className="text-muted-foreground mt-2">
-                            {insights.consensus.outcome} ({insights.consensus.confidence_percent}% confidence)
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {insights.risks && insights.risks.length > 0 && (
-                    <div className="p-6 rounded-xl bg-card border border-border">
-                      <div className="flex items-start gap-3">
-                        <AlertTriangle className="h-6 w-6 text-yellow-400 flex-shrink-0 mt-1" />
-                        <div>
-                          <div className="font-semibold text-lg">Risk Factors</div>
-                          <div className="text-muted-foreground mt-2 space-y-2">
-                            {insights.risks.map((risk: any, idx: number) => (
-                              <div key={idx}>• {risk.title}: {risk.description}</div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {insights.opportunities && insights.opportunities.length > 0 && (
-                    <div className="p-6 rounded-xl bg-card border border-border">
-                      <div className="flex items-start gap-3">
-                        <TrendingUp className="h-6 w-6 text-purple-400 flex-shrink-0 mt-1" />
-                        <div>
-                          <div className="font-semibold text-lg">Opportunities</div>
-                          <div className="text-muted-foreground mt-2 space-y-2">
-                            {insights.opportunities.map((opp: any, idx: number) => (
-                              <div key={idx}>• {opp.title}: {opp.description}</div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+              </div>
+            ) : insights?.status === 'processing' ? (
+              <div className="p-8 rounded-xl bg-card border border-border text-center">
+                <Loader2 className="h-6 w-6 animate-spin text-purple-400 mx-auto mb-2" />
+                <p className="text-muted-foreground">Generating insights...</p>
+              </div>
+            ) : (
+              <div className="p-8 rounded-xl bg-card border border-border text-center text-muted-foreground">
+                Insights not available yet
+              </div>
+            )}
           </div>
         </main>
       </div>
     </div>
   );
 }
+
