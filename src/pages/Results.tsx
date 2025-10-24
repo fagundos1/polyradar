@@ -245,7 +245,9 @@ export default function Results() {
                   <thead>
                     <tr className="border-b border-border/50">
                       <th className="text-left py-4 px-6 font-medium text-muted-foreground">Model</th>
-                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Outcome</t                    <th className="py-3 px-6 text-left text-sm font-medium text-muted-foreground">Confidence</th>                    <th className="text-left py-4 px-6 font-medium text-muted-foreground">Reasoning</th>
+                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Outcome</th>
+                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Confidence</th>
+                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Reasoning</th>
                       <th className="text-left py-4 px-6 font-medium text-muted-foreground">Sources</th>
                     </tr>
                   </thead>
