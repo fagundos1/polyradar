@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import Header from "@/components/Header";
 import { TrendingUp, Calendar, Lightbulb, ChevronDown, ChevronUp, CheckCircle, XCircle, Loader2, ExternalLink } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { useDynamic } from "@/hooks/useDynamic";
 import { getAnalysisWithResults, subscribeToAnalysis } from "@/lib/api";
@@ -316,28 +317,39 @@ export default function Results() {
             <h2 className="text-3xl font-bold mb-6">TIMELINE</h2>
             
             {timeline && timeline.status === 'success' && timeline.events ? (
-              <div className="space-y-6">
-                <div className="relative">
-                  {/* Timeline line */}
-                  <div className="absolute top-6 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-gray-500 to-red-500 rounded-full"></div>
-                  
-                  {/* Timeline points */}
-                  <div className="relative flex justify-between">
-                    {timeline.events.map((event: any, index: number) => {
-                      const colors = ['purple', 'gray', 'red'];
-                      const color = colors[index % colors.length];
-                      
-                      return (
-                        <div key={index} className="flex flex-col items-center">
-                          <div className="text-sm font-medium mb-2">{event.date}</div>
-                          <div className={`w-4 h-4 rounded-full bg-${color}-500 border-4 border-background relative z-10`}></div>
-                          <div className="text-sm text-muted-foreground mt-2">{event.label}</div>
-                        </div>
-                      );
-                    })}
+              <TooltipProvider>
+                <div className="space-y-6">
+                  <div className="relative">
+                    {/* Timeline line */}
+                    <div className="absolute top-6 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-gray-500 to-red-500 rounded-full"></div>
+                    
+                    {/* Timeline points */}
+                    <div className="relative flex justify-between">
+                      {timeline.events.map((event: any, index: number) => {
+                        const colors = ['purple', 'gray', 'red'];
+                        const color = colors[index % colors.length];
+                        
+                        return (
+                          <div key={index} className="flex flex-col items-center">
+                            <div className="text-sm font-medium mb-2">{event.date || 'TBD'}</div>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className={`w-4 h-4 rounded-full bg-${color}-500 border-4 border-background relative z-10 cursor-pointer hover:scale-125 transition-transform`}></div>
+                              </TooltipTrigger>
+                              {event.description && (
+                                <TooltipContent className="max-w-xs">
+                                  <p>{event.description}</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                            <div className="text-sm text-muted-foreground mt-2">{event.title || event.label}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </TooltipProvider>
             ) : timeline?.status === 'processing' ? (
               <div className="p-8 rounded-xl bg-card border border-border text-center">
                 <Loader2 className="h-6 w-6 animate-spin text-purple-400 mx-auto mb-2" />
