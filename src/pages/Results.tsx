@@ -413,15 +413,16 @@ export default function Results() {
                     <div 
                       className="absolute left-0 right-0"
                       style={{ 
-                        top: '10px',
+                        top: '50%',
                         height: '2px',
                         zIndex: 1,
-                        background: 'linear-gradient(to right, rgba(139,92,246,0.5) 0%, rgba(236,72,153,0.5) 50%, rgba(139,92,246,0.5) 100%)'
+                        background: 'linear-gradient(to right, rgba(139,92,246,0.5) 0%, rgba(236,72,153,0.5) 50%, rgba(139,92,246,0.5) 100%)',
+                        transform: 'translateY(-50%)'
                       }}
                     />
                     
                     {/* Events */}
-                    <div className="relative flex justify-between items-start" style={{ zIndex: 10 }}>
+                    <div className="relative flex justify-between items-center" style={{ zIndex: 10 }}>
                       {timeline.events.map((event, index) => (
                         <Tooltip key={index}>
                           <TooltipTrigger asChild>
