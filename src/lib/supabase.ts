@@ -98,6 +98,16 @@ export interface Insights {
   raw_response: any | null;
 }
 
+export interface Sources {
+  id: string;
+  analysis_id: string;
+  links: string[];
+  status: 'pending' | 'processing' | 'success' | 'error' | 'timeout';
+  error: string | null;
+  requested_at: string;
+  completed_at: string | null;
+}
+
 export interface Transaction {
   id: string;
   user_id: string;

@@ -13,12 +13,13 @@ import {
   Loader2,
   Menu,
   X,
-  AlertTriangle
+  AlertTriangle,
+  ExternalLink
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDynamic } from "@/hooks/useDynamic";
 import { getAnalysisWithResults, subscribeToAnalysis } from "@/lib/api";
-import type { Analysis, ModelPrediction, Timeline, Insights } from "@/lib/supabase";
+import type { Analysis, ModelPrediction, Timeline, Insights, Sources } from "@/lib/supabase";
 
 export default function Results() {
   const [, params] = useRoute("/results/:id");
@@ -31,6 +32,7 @@ export default function Results() {
   const [predictions, setPredictions] = useState<ModelPrediction[]>([]);
   const [timeline, setTimeline] = useState<Timeline | null>(null);
   const [insights, setInsights] = useState<Insights | null>(null);
+  const [sources, setSources] = useState<Sources | null>(null);
   const [expandedPredictions, setExpandedPredictions] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<string>('predictions');
@@ -40,6 +42,7 @@ export default function Results() {
   const predictionsRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
   const insightsRef = useRef<HTMLDivElement>(null);
+  const sourcesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!analysisId) {
@@ -52,6 +55,7 @@ export default function Results() {
       setPredictions(data.predictions);
       setTimeline(data.timeline);
       setInsights(data.insights);
+      setSources(data.sources);
       setIsLoading(false);
     }).catch((error) => {
       console.error('Failed to load analysis:', error);
@@ -63,6 +67,7 @@ export default function Results() {
       if (update.predictions) setPredictions(update.predictions);
       if (update.timeline) setTimeline(update.timeline);
       if (update.insights) setInsights(update.insights);
+      if (update.sources) setSources(update.sources);
     });
 
     return () => unsubscribe();
@@ -95,9 +100,10 @@ export default function Results() {
     if (predictionsRef.current) observer.observe(predictionsRef.current);
     if (timelineRef.current) observer.observe(timelineRef.current);
     if (insightsRef.current) observer.observe(insightsRef.current);
+    if (sourcesRef.current) observer.observe(sourcesRef.current);
 
     return () => observer.disconnect();
-  }, [predictions, timeline, insights]);
+  }, [predictions, timeline, insights, sources]);
 
   const togglePrediction = (modelName: string) => {
     setExpandedPredictions(prev => {
@@ -205,6 +211,7 @@ export default function Results() {
           <NavButton section="predictions" icon={TrendingUp} label="Predictions" ref={predictionsRef} />
           <NavButton section="timeline" icon={Calendar} label="Timeline" ref={timelineRef} />
           <NavButton section="insights" icon={Lightbulb} label="Key Insights" ref={insightsRef} />
+          <NavButton section="sources" icon={ExternalLink} label="Sources" ref={sourcesRef} />
         </div>
       </motion.div>
 
@@ -234,6 +241,7 @@ export default function Results() {
               <NavButton section="predictions" icon={TrendingUp} label="Predictions" ref={predictionsRef} />
               <NavButton section="timeline" icon={Calendar} label="Timeline" ref={timelineRef} />
               <NavButton section="insights" icon={Lightbulb} label="Key Insights" ref={insightsRef} />
+              <NavButton section="sources" icon={ExternalLink} label="Sources" ref={sourcesRef} />
             </div>
           </motion.div>
         )}
@@ -661,6 +669,70 @@ export default function Results() {
             ) : (
               <div className="p-8 rounded-xl text-center text-gray-400" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
                 Insights not available yet
+              </div>
+            )}
+          </motion.div>
+
+          {/* SOURCES Section */}
+          <motion.div
+            ref={sourcesRef}
+            data-section="sources"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <h2 className="text-3xl font-bold mb-8 text-white">
+              SOURCES
+            </h2>
+            
+            {!sources || sources.status === 'processing' ? (
+              <div className="p-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
+                  <p className="text-gray-300 text-lg font-medium mb-2">Collecting Sources</p>
+                  <p className="text-gray-500 text-sm">Gathering relevant news articles and references...</p>
+                </div>
+              </div>
+            ) : sources.status === 'success' && sources.links && sources.links.length > 0 ? (
+              <div className="space-y-3">
+                {sources.links.map((link, index) => (
+                  <motion.a
+                    key={index}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="flex items-center gap-3 p-4 rounded-xl transition-all duration-200 group"
+                    style={{ 
+                      backgroundColor: '#1a1a1a',
+                      border: '1px solid #333333'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#1a1a1a';
+                      e.currentTarget.style.borderColor = '#333333';
+                    }}
+                  >
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(139, 92, 246, 0.2)' }}>
+                      <span className="text-sm font-mono font-semibold text-purple-400">{index + 1}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-300 truncate group-hover:text-purple-300 transition-colors">
+                        {link}
+                      </p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-gray-500 group-hover:text-purple-400 transition-colors flex-shrink-0" />
+                  </motion.a>
+                ))}
+              </div>
+            ) : (
+              <div className="p-8 rounded-xl text-center text-gray-400" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
+                Sources not available yet
               </div>
             )}
           </motion.div>

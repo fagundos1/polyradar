@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { Analysis, ModelPrediction, Timeline, Insights } from './supabase';
+import type { Analysis, ModelPrediction, Timeline, Insights, Sources } from './supabase';
 
 export interface CreateAnalysisParams {
   walletAddress: string;
@@ -165,18 +165,33 @@ export async function getAnalysisWithResults(analysisId: string) {
 
   console.log('[getAnalysisWithResults] Insights found:', insights?.status || 'not found');
 
+  // Получаем sources
+  const { data: sources, error: sourcesError } = await supabase
+    .from('sources')
+    .select('*')
+    .eq('analysis_id', analysisId)
+    .single();
+
+  if (sourcesError && sourcesError.code !== 'PGRST116') {
+    console.error('[getAnalysisWithResults] Error fetching sources:', sourcesError);
+  }
+
+  console.log('[getAnalysisWithResults] Sources found:', sources?.status || 'not found');
+
   const result = {
     analysis,
     predictions: predictions || [],
     timeline: timeline || null,
     insights: insights || null,
+    sources: sources || null,
   };
 
   console.log('[getAnalysisWithResults] Returning data:', {
     analysisStatus: result.analysis?.status,
     predictionsCount: result.predictions.length,
     timelineStatus: result.timeline?.status,
-    insightsStatus: result.insights?.status
+    insightsStatus: result.insights?.status,
+    sourcesStatus: result.sources?.status
   });
 
   return result;
@@ -192,6 +207,7 @@ export function subscribeToAnalysis(
     predictions?: ModelPrediction[];
     timeline?: Timeline;
     insights?: Insights;
+    sources?: Sources;
   }) => void
 ) {
   console.log('[subscribeToAnalysis] Setting up subscriptions for:', analysisId);
@@ -215,7 +231,8 @@ export function subscribeToAnalysis(
       callback({
         predictions: data.predictions,
         timeline: data.timeline,
-        insights: data.insights
+        insights: data.insights,
+        sources: data.sources
       });
     } catch (error) {
       console.error('[subscribeToAnalysis] Polling error:', error);
@@ -284,6 +301,24 @@ export function subscribeToAnalysis(
       )
       .subscribe();
 
+    // Подписка на изменения в sources
+    const sourcesChannel = supabase
+      .channel(`sources:${analysisId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sources',
+          filter: `analysis_id=eq.${analysisId}`,
+        },
+        async (payload) => {
+          console.log('[subscribeToAnalysis] Sources event received:', payload);
+          await updateData();
+        }
+      )
+      .subscribe();
+
     // Возвращаем функцию для отписки
     return () => {
       console.log('[subscribeToAnalysis] Unsubscribing...');
@@ -294,6 +329,7 @@ export function subscribeToAnalysis(
       predictionsChannel.unsubscribe();
       timelineChannel.unsubscribe();
       insightsChannel.unsubscribe();
+      sourcesChannel.unsubscribe();
     };
   } catch (error) {
     console.error('[subscribeToAnalysis] Error setting up real-time subscriptions:', error);
