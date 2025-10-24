@@ -145,8 +145,8 @@ export default function Home() {
               <p className="text-sm text-muted-foreground">
                 {walletAddress ? (
                   <>
-                    You have <span className="font-mono text-purple-400">{radarBalance}</span> RADAR tokens.
-                    Each analysis costs <span className="font-mono text-purple-400">100</span> RADAR.
+                    You have <span className="text-purple-400">{radarBalance}</span> RADAR tokens.
+                    Each analysis costs <span className="text-purple-400">100</span> RADAR.
                   </>
                 ) : (
                   <>Connect your wallet to start analyzing events</>

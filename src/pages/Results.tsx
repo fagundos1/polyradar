@@ -199,7 +199,7 @@ export default function Results() {
     </motion.button>
   );
 
-  return (
+    return (
     <div className="min-h-screen flex" style={{ backgroundColor: '#0a0a0a' }}>
       {/* Desktop Sidebar */}
       <motion.div
@@ -249,12 +249,12 @@ export default function Results() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <Header
-          walletAddress={walletAddress}
+      <Header
+        walletAddress={walletAddress}
           connectWallet={connectWallet}
           disconnectWallet={disconnectWallet}
-          radarBalance={radarBalance}
-        />
+        radarBalance={radarBalance}
+      />
 
         <main className="flex-1 p-4 md:p-8 space-y-16">
           {/* PREDICTIONS Section */}
@@ -297,7 +297,7 @@ export default function Results() {
                     <div className="p-4">
                       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-4 items-center">
                         {/* Model */}
-                        <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 bg-gradient-to-br ${getModelGradient(prediction.model_name)} rounded-lg flex items-center justify-center text-white`}>
                             {getModelIcon(prediction.model_name)}
                           </div>
@@ -322,15 +322,15 @@ export default function Results() {
                               <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
                               <span className="text-gray-400">Processing...</span>
                             </>
-                          )}
-                        </div>
+                      )}
+                    </div>
 
                         {/* Confidence */}
                         <div className="space-y-2">
                           {prediction.status === 'success' && prediction.confidence_percent !== null ? (
                             <>
                               <div className="flex items-center gap-2">
-                                <span className="font-mono font-semibold text-white">{prediction.confidence_percent}%</span>
+                                <span className="font-semibold text-white">{prediction.confidence_percent}%</span>
                               </div>
                               <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#333333', width: '80px' }}>
                                 <motion.div
@@ -352,11 +352,11 @@ export default function Results() {
                             <motion.button
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.95 }}
-                              onClick={() => togglePrediction(prediction.model_name)}
+                          onClick={() => togglePrediction(prediction.model_name)}
                               className="text-purple-400 hover:text-purple-300 flex items-center gap-1 font-medium transition-colors duration-200"
-                            >
+                        >
                               View Details
-                              {expandedPredictions.has(prediction.model_name) ? (
+                          {expandedPredictions.has(prediction.model_name) ? (
                                 <ChevronUp className="h-4 w-4" />
                               ) : (
                                 <ChevronDown className="h-4 w-4" />
@@ -365,18 +365,18 @@ export default function Results() {
                           ) : (
                             <span className="text-gray-500">—</span>
                           )}
-                        </div>
+                          </div>
 
                         {/* Sources */}
                         <div className="text-center">
                           {prediction.status === 'success' && prediction.sources_count !== null ? (
-                            <span className="font-mono text-gray-400 text-sm">
+                            <span className="text-gray-400 text-sm">
                               {prediction.sources_count}
                             </span>
                           ) : (
                             <span className="text-gray-500">—</span>
                           )}
-                        </div>
+                      </div>
                       </div>
 
                       {/* Expanded Reasoning */}
@@ -392,14 +392,14 @@ export default function Results() {
                           >
                             <div className="p-6 rounded-lg">
                               <p className="text-gray-300 leading-relaxed text-sm">{prediction.reasoning}</p>
-                            </div>
+                  </div>
                           </motion.div>
-                        )}
+              )}
                       </AnimatePresence>
-                    </div>
+            </div>
                   </motion.div>
                 ))}
-              </div>
+          </div>
             )}
           </motion.div>
 
@@ -480,10 +480,10 @@ export default function Results() {
                               />
                               
                               {/* Brighter date with hover effect */}
-                              <div className="text-[15px] font-semibold font-mono text-gray-200 mt-3 group-hover:text-purple-400 transition-colors duration-200">
+                              <div className="text-[15px] font-semibold text-gray-200 mt-3 group-hover:text-purple-400 transition-colors duration-200">
                                 {event.date || 'TBD'}
                               </div>
-                              
+
                               {/* Better label */}
                               <div className="text-[13px] text-gray-400 mt-1.5">
                                 {event.title}
@@ -502,7 +502,7 @@ export default function Results() {
                           </TooltipContent>
                         </Tooltip>
                       ))}
-                    </div>
+                  </div>
                   </div>
 
                   {/* Mobile: Vertical Timeline */}
@@ -535,7 +535,7 @@ export default function Results() {
 
                         {/* Content */}
                         <div className="flex-1 pb-6">
-                          <div className="font-mono text-sm text-gray-300 mb-1">
+                          <div className="text-sm text-gray-300 mb-1">
                             {event.date || 'TBD'}
                           </div>
                           <div className="text-sm font-semibold text-white mb-2">
@@ -552,7 +552,7 @@ export default function Results() {
                   );
                 })()}
               </TooltipProvider>
-            ) : (
+                ) : (
               <div className="p-8 rounded-xl text-center text-gray-400" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
                 Timeline not available yet
               </div>
@@ -580,7 +580,7 @@ export default function Results() {
                 </div>
               </div>
             ) : insights.status === 'success' && insights.content ? (
-              <div className="space-y-4">
+            <div className="space-y-4">
                 {/* Agreement */}
                 {insights.content.agreement && (
                   <motion.div
@@ -596,11 +596,11 @@ export default function Results() {
                     <div className="flex items-start gap-4">
                       <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
                         <CheckCircle className="h-6 w-6 text-purple-400" />
-                      </div>
+              </div>
                       <div>
                         <h3 className="text-lg font-semibold text-white mb-3">{insights.content.agreement.title}</h3>
                         <p className="text-gray-300 text-sm leading-relaxed">{insights.content.agreement.description}</p>
-                      </div>
+                  </div>
                     </div>
                   </motion.div>
                 )}
@@ -620,8 +620,8 @@ export default function Results() {
                     <div className="flex items-start gap-4">
                       <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
                         <AlertTriangle className="h-6 w-6 text-amber-400" />
-                      </div>
-                      <div>
+                  </div>
+                          <div>
                         <h3 className="text-lg font-semibold text-white mb-3">{insights.content.divergence.title}</h3>
                         <p className="text-gray-300 text-sm leading-relaxed">{insights.content.divergence.description}</p>
                       </div>
@@ -669,7 +669,7 @@ export default function Results() {
             ) : (
               <div className="p-8 rounded-xl text-center text-gray-400" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
                 Insights not available yet
-              </div>
+            </div>
             )}
           </motion.div>
 
@@ -737,7 +737,7 @@ export default function Results() {
             )}
           </motion.div>
         </main>
-      </div>
+        </div>
     </div>
   );
 }

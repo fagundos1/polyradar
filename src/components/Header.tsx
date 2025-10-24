@@ -37,13 +37,13 @@ export default function Header({
           {walletAddress ? (
             <>
               <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-950/50 border border-purple-900/50">
-                <span className="text-sm font-mono text-purple-400">{radarBalance}</span>
+                <span className="text-sm text-purple-400">{radarBalance}</span>
                 <span className="text-xs text-gray-400">RADAR</span>
               </div>
               <Button
                 variant="outline"
                 onClick={onDisconnect}
-                className="font-mono text-sm"
+                className="text-sm"
               >
                 {truncateAddress(walletAddress)}
               </Button>
