@@ -406,6 +406,14 @@ export default function Results() {
             
             {timeline && timeline.status === 'success' && timeline.events && timeline.events.length > 0 ? (
               <TooltipProvider>
+                {(() => {
+                  const sortedEvents = [...timeline.events].sort((a, b) => {
+                    const dateA = new Date(a.date || '9999-12-31').getTime();
+                    const dateB = new Date(b.date || '9999-12-31').getTime();
+                    return dateA - dateB;
+                  });
+                  
+                  return (
                 <div className="py-12 px-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
                   {/* Desktop: Horizontal Timeline */}
                   <div className="hidden md:block relative w-full py-12">
@@ -423,7 +431,7 @@ export default function Results() {
                     
                     {/* Events */}
                     <div className="relative flex justify-between items-center" style={{ zIndex: 10 }}>
-                      {timeline.events.map((event, index) => (
+                      {sortedEvents.map((event, index) => (
                         <Tooltip key={index}>
                           <TooltipTrigger asChild>
                             <motion.div
@@ -480,7 +488,7 @@ export default function Results() {
 
                   {/* Mobile: Vertical Timeline */}
                   <div className="md:hidden space-y-6">
-                    {timeline.events.map((event, index) => (
+                    {sortedEvents.map((event, index) => (
                       <motion.div
                         key={index}
                         initial={{ opacity: 0, x: -20 }}
@@ -498,7 +506,7 @@ export default function Results() {
                               borderColor: '#8b5cf6'
                             }}
                           />
-                          {index < timeline.events.length - 1 && (
+                          {index < sortedEvents.length - 1 && (
                             <div 
                               className="w-0.5 flex-1 mt-2"
                               style={{ backgroundColor: 'rgba(139,92,246,0.3)', minHeight: '40px' }}
@@ -522,6 +530,8 @@ export default function Results() {
                     ))}
                   </div>
                 </div>
+                  );
+                })()}
               </TooltipProvider>
             ) : (
               <div className="p-8 rounded-xl text-center text-gray-400" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
