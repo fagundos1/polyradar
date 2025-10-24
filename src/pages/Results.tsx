@@ -12,7 +12,8 @@ import {
   XCircle, 
   Loader2,
   Menu,
-  X
+  X,
+  AlertTriangle
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDynamic } from "@/hooks/useDynamic";
@@ -85,7 +86,7 @@ export default function Results() {
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.5 }
     );
 
     if (predictionsRef.current) observer.observe(predictionsRef.current);
@@ -137,15 +138,30 @@ export default function Results() {
     }
   };
 
+  const getModelGradient = (modelName: string) => {
+    switch (modelName) {
+      case 'model1':
+        return 'from-purple-500 to-purple-600';
+      case 'model2':
+        return 'from-pink-500 to-pink-600';
+      case 'model3':
+        return 'from-cyan-500 to-cyan-600';
+      case 'model4':
+        return 'from-amber-500 to-amber-600';
+      default:
+        return 'from-purple-500 to-purple-600';
+    }
+  };
+
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 80) return 'from-purple-600 to-purple-500';
-    if (confidence >= 70) return 'from-orange-500 to-orange-400';
-    return 'from-orange-600 to-red-500';
+    if (confidence >= 80) return 'from-purple-500 to-purple-600';
+    if (confidence >= 60) return 'from-orange-500 to-orange-600';
+    return 'from-red-500 to-red-600';
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0a0a0a' }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -160,31 +176,29 @@ export default function Results() {
 
   const NavButton = ({ section, icon: Icon, label, ref }: any) => (
     <motion.button
-      whileHover={{ scale: 1.02, x: 4 }}
+      whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => scrollToSection(ref, section)}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
         activeSection === section
-          ? 'bg-gradient-to-r from-purple-600/20 to-purple-500/10 border border-purple-500/30 shadow-lg shadow-purple-500/10'
-          : 'hover:bg-gray-800/50'
+          ? 'bg-purple-950/50 text-purple-400 border border-purple-500/50'
+          : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
       }`}
     >
-      <Icon className={`h-5 w-5 ${activeSection === section ? 'text-purple-400' : 'text-gray-500'}`} />
-      <span className={`font-medium ${activeSection === section ? 'text-white' : 'text-gray-400'}`}>
-        {label}
-      </span>
+      <Icon className="h-5 w-5" />
+      <span className="font-medium">{label}</span>
     </motion.button>
   );
 
   return (
-    <div className="min-h-screen flex bg-black">
+    <div className="min-h-screen flex" style={{ backgroundColor: '#0a0a0a' }}>
       {/* Desktop Sidebar */}
       <motion.div
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="hidden md:block w-64 bg-gray-900/50 border-r border-gray-800 p-6 backdrop-blur-sm"
+        className="hidden md:block w-60 p-6 sticky top-20 h-screen"
       >
-        <div className="space-y-3">
+        <div className="space-y-2">
           <NavButton section="predictions" icon={TrendingUp} label="Predictions" ref={predictionsRef} />
           <NavButton section="timeline" icon={Calendar} label="Timeline" ref={timelineRef} />
           <NavButton section="insights" icon={Lightbulb} label="Key Insights" ref={insightsRef} />
@@ -196,7 +210,8 @@ export default function Results() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 p-3 bg-gray-900 rounded-xl border border-gray-800"
+        className="md:hidden fixed top-20 left-4 z-50 p-3 rounded-lg"
+        style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}
       >
         {isMobileMenuOpen ? <X className="h-6 w-6 text-white" /> : <Menu className="h-6 w-6 text-white" />}
       </motion.button>
@@ -209,9 +224,10 @@ export default function Results() {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25 }}
-            className="md:hidden fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 border-r border-gray-800 p-6"
+            className="md:hidden fixed inset-y-0 left-0 z-40 w-64 p-6"
+            style={{ backgroundColor: '#1a1a1a', borderRight: '1px solid #333333' }}
           >
-            <div className="mt-16 space-y-3">
+            <div className="mt-24 space-y-2">
               <NavButton section="predictions" icon={TrendingUp} label="Predictions" ref={predictionsRef} />
               <NavButton section="timeline" icon={Calendar} label="Timeline" ref={timelineRef} />
               <NavButton section="insights" icon={Lightbulb} label="Key Insights" ref={insightsRef} />
@@ -229,7 +245,7 @@ export default function Results() {
           radarBalance={radarBalance}
         />
 
-        <main className="flex-1 p-4 md:p-8 space-y-12">
+        <main className="flex-1 p-4 md:p-8 space-y-16">
           {/* PREDICTIONS Section */}
           <motion.div
             ref={predictionsRef}
@@ -238,48 +254,57 @@ export default function Results() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold mb-8 text-white">
               PREDICTIONS
             </h2>
             
             {predictions.length === 0 ? (
-              <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 text-center text-gray-400">
+              <div className="p-8 rounded-xl text-center text-gray-400" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
                 No predictions available yet
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333', boxShadow: '0 4px 6px rgba(0,0,0,0.2)' }}>
+                {/* Table Header - Desktop Only */}
+                <div className="hidden md:grid grid-cols-5 gap-4 p-4 border-b" style={{ borderColor: 'rgba(51,51,51,0.3)' }}>
+                  <div className="text-sm font-semibold text-gray-400">Model</div>
+                  <div className="text-sm font-semibold text-gray-400">Outcome</div>
+                  <div className="text-sm font-semibold text-gray-400">Confidence</div>
+                  <div className="text-sm font-semibold text-gray-400">Reasoning</div>
+                  <div className="text-sm font-semibold text-gray-400 text-center">Sources</div>
+                </div>
+
+                {/* Table Rows */}
                 {predictions.map((prediction, index) => (
                   <motion.div
                     key={prediction.model_name}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    whileHover={{ scale: 1.01 }}
-                    className="rounded-2xl bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 overflow-hidden backdrop-blur-sm hover:border-purple-500/30 transition-all"
+                    className="border-b last:border-b-0 hover:bg-gray-900/30 transition-all duration-200"
+                    style={{ borderColor: 'rgba(51,51,51,0.3)' }}
                   >
-                    <div className="p-6">
-                      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-center">
+                    <div className="p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-4 items-center">
                         {/* Model */}
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
+                          <div className={`w-8 h-8 bg-gradient-to-br ${getModelGradient(prediction.model_name)} rounded-lg flex items-center justify-center text-white`}>
                             {getModelIcon(prediction.model_name)}
                           </div>
                           <span className="font-semibold text-white">
-                            {prediction.model_name.replace('model', 'Model ')}
+                            Model {prediction.model_name.replace('model', '')}
                           </span>
                         </div>
 
                         {/* Outcome */}
                         <div className="flex items-center gap-2">
                           {prediction.status === 'success' ? (
-                            <>
-                              <CheckCircle className="h-5 w-5 text-green-400" />
-                              <span className="font-medium text-green-400">{prediction.outcome}</span>
-                            </>
+                            <span className="inline-block px-3 py-1 rounded-md font-semibold text-base" style={{ backgroundColor: 'rgba(251,191,36,0.15)', color: '#fbbf24' }}>
+                              {prediction.outcome}
+                            </span>
                           ) : prediction.status === 'error' ? (
                             <>
                               <XCircle className="h-5 w-5 text-red-400" />
-                              <span className="text-red-400">NO</span>
+                              <span className="text-red-400">Error</span>
                             </>
                           ) : (
                             <>
@@ -293,11 +318,10 @@ export default function Results() {
                         <div className="space-y-2">
                           {prediction.status === 'success' && prediction.confidence_percent !== null ? (
                             <>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-400">Confidence</span>
-                                <span className="font-semibold text-white">{prediction.confidence_percent}%</span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono font-semibold text-white">{prediction.confidence_percent}%</span>
                               </div>
-                              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                              <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#333333', width: '80px' }}>
                                 <motion.div
                                   initial={{ width: 0 }}
                                   animate={{ width: `${prediction.confidence_percent}%` }}
@@ -315,10 +339,10 @@ export default function Results() {
                         <div>
                           {prediction.status === 'success' && prediction.reasoning ? (
                             <motion.button
-                              whileHover={{ scale: 1.05 }}
+                              whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.95 }}
                               onClick={() => togglePrediction(prediction.model_name)}
-                              className="text-purple-400 hover:text-purple-300 flex items-center gap-1 font-medium transition-colors"
+                              className="text-purple-400 hover:text-purple-300 flex items-center gap-1 font-medium transition-colors duration-200"
                             >
                               View Details
                               {expandedPredictions.has(prediction.model_name) ? (
@@ -335,7 +359,7 @@ export default function Results() {
                         {/* Sources */}
                         <div className="text-center">
                           {prediction.status === 'success' && prediction.sources_count !== null ? (
-                            <span className="inline-block px-4 py-2 bg-gray-800 rounded-lg text-white font-semibold">
+                            <span className="font-mono text-gray-400 text-sm">
                               {prediction.sources_count}
                             </span>
                           ) : (
@@ -352,9 +376,12 @@ export default function Results() {
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
                             transition={{ duration: 0.3 }}
-                            className="mt-4 pt-4 border-t border-gray-800"
+                            className="mt-6 pt-6 border-t"
+                            style={{ borderColor: 'rgba(51,51,51,0.3)', backgroundColor: 'rgba(139,92,246,0.05)' }}
                           >
-                            <p className="text-gray-300 leading-relaxed">{prediction.reasoning}</p>
+                            <div className="p-6 rounded-lg">
+                              <p className="text-gray-300 leading-relaxed text-sm">{prediction.reasoning}</p>
+                            </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -373,56 +400,121 @@ export default function Results() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold mb-8 text-white">
               TIMELINE
             </h2>
             
             {timeline && timeline.status === 'success' && timeline.events && timeline.events.length > 0 ? (
               <TooltipProvider>
-                <div className="p-8 rounded-2xl bg-gradient-to-br from-gray-900/80 to-gray-900/40 border border-gray-800 backdrop-blur-sm">
-                  <div className="relative">
+                <div className="p-12 rounded-xl" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
+                  {/* Desktop: Horizontal Timeline */}
+                  <div className="hidden md:block relative py-12">
                     {/* Gradient Line */}
-                    <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-gray-600 to-red-500 rounded-full transform -translate-y-1/2" />
+                    <div 
+                      className="absolute left-0 right-0 h-0.5 rounded-full"
+                      style={{ 
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'linear-gradient(to right, rgba(139,92,246,0.3) 0%, rgba(236,72,153,0.3) 50%, rgba(139,92,246,0.3) 100%)'
+                      }}
+                    />
                     
                     {/* Events */}
                     <div className="relative flex justify-between items-center">
-                      {timeline.events.map((event, index) => {
-                        const colors = ['purple', 'gray', 'red'];
-                        const color = colors[Math.min(index, colors.length - 1)];
-                        
-                        return (
-                          <Tooltip key={index}>
-                            <TooltipTrigger asChild>
-                              <motion.div
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ delay: index * 0.2 + 0.5 }}
-                                whileHover={{ scale: 1.5 }}
-                                className="flex flex-col items-center cursor-pointer"
-                              >
-                                <div className={`w-4 h-4 rounded-full bg-${color}-500 border-4 border-black shadow-lg shadow-${color}-500/50 transition-all`} />
-                                <div className="mt-4 text-center">
-                                  <div className="text-sm font-semibold text-white mb-1">
-                                    {event.date || 'TBD'}
-                                  </div>
-                                  <div className={`text-xs text-${color}-400`}>
-                                    {event.title}
-                                  </div>
+                      {timeline.events.map((event, index) => (
+                        <Tooltip key={index}>
+                          <TooltipTrigger asChild>
+                            <motion.div
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              transition={{ delay: index * 0.2 + 0.5 }}
+                              whileHover={{ scale: 1.15 }}
+                              className="flex flex-col items-center cursor-pointer relative z-10"
+                            >
+                              {/* Marker */}
+                              <div 
+                                className="w-4 h-4 rounded-full border-3 transition-all"
+                                style={{ 
+                                  backgroundColor: '#0a0a0a',
+                                  borderWidth: '3px',
+                                  borderColor: '#8b5cf6'
+                                }}
+                              />
+                              
+                              {/* Date */}
+                              <div className="mt-4 text-center">
+                                <div className="font-mono text-sm text-gray-300 mb-1">
+                                  {event.date || 'TBD'}
                                 </div>
-                              </motion.div>
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-xs bg-gray-900 border-gray-700">
-                              <p className="text-sm text-gray-300">{event.description}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        );
-                      })}
+                                {/* Label */}
+                                <div className="text-xs text-gray-500">
+                                  {event.title}
+                                </div>
+                              </div>
+                            </motion.div>
+                          </TooltipTrigger>
+                          <TooltipContent 
+                            className="max-w-xs rounded-lg p-3"
+                            style={{ 
+                              backgroundColor: '#1a1a1a', 
+                              border: '1px solid rgba(139,92,246,0.5)',
+                              boxShadow: '0 10px 15px rgba(139,92,246,0.2)'
+                            }}
+                          >
+                            <p className="text-sm text-gray-300">{event.description}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
                     </div>
+                  </div>
+
+                  {/* Mobile: Vertical Timeline */}
+                  <div className="md:hidden space-y-6">
+                    {timeline.events.map((event, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex gap-4"
+                      >
+                        {/* Marker and Line */}
+                        <div className="flex flex-col items-center">
+                          <div 
+                            className="w-4 h-4 rounded-full border-3"
+                            style={{ 
+                              backgroundColor: '#0a0a0a',
+                              borderWidth: '3px',
+                              borderColor: '#8b5cf6'
+                            }}
+                          />
+                          {index < timeline.events.length - 1 && (
+                            <div 
+                              className="w-0.5 flex-1 mt-2"
+                              style={{ backgroundColor: 'rgba(139,92,246,0.3)', minHeight: '40px' }}
+                            />
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 pb-6">
+                          <div className="font-mono text-sm text-gray-300 mb-1">
+                            {event.date || 'TBD'}
+                          </div>
+                          <div className="text-sm font-semibold text-white mb-2">
+                            {event.title}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {event.description}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
                 </div>
               </TooltipProvider>
             ) : (
-              <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 text-center text-gray-400">
+              <div className="p-8 rounded-xl text-center text-gray-400" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
                 Timeline not available yet
               </div>
             )}
@@ -436,7 +528,7 @@ export default function Results() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold mb-8 text-white">
               KEY INSIGHTS
             </h2>
             
@@ -448,16 +540,19 @@ export default function Results() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.4 }}
-                    whileHover={{ scale: 1.01 }}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-purple-900/30 to-purple-900/10 border border-purple-500/30 backdrop-blur-sm hover:border-purple-500/50 transition-all"
+                    className="p-6 rounded-xl transition-all duration-200"
+                    style={{ 
+                      backgroundColor: 'rgba(139,92,246,0.08)',
+                      borderLeft: '4px solid #8b5cf6'
+                    }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/20">
-                        <CheckCircle className="h-6 w-6 text-white" />
+                      <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="h-6 w-6 text-purple-400" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-white mb-2">{insights.content.agreement.title}</h3>
-                        <p className="text-gray-300">{insights.content.agreement.description}</p>
+                        <h3 className="text-lg font-semibold text-white mb-3">{insights.content.agreement.title}</h3>
+                        <p className="text-gray-300 text-sm leading-relaxed">{insights.content.agreement.description}</p>
                       </div>
                     </div>
                   </motion.div>
@@ -469,20 +564,19 @@ export default function Results() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 }}
-                    whileHover={{ scale: 1.01 }}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-red-900/30 to-red-900/10 border border-red-500/30 backdrop-blur-sm hover:border-red-500/50 transition-all"
+                    className="p-6 rounded-xl transition-all duration-200"
+                    style={{ 
+                      backgroundColor: 'rgba(245,158,11,0.08)',
+                      borderLeft: '4px solid #f59e0b'
+                    }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-red-500/20">
-                        <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                          <line x1="12" y1="9" x2="12" y2="13"/>
-                          <line x1="12" y1="17" x2="12.01" y2="17"/>
-                        </svg>
+                      <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                        <AlertTriangle className="h-6 w-6 text-amber-400" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-white mb-2">{insights.content.divergence.title}</h3>
-                        <p className="text-gray-300">{insights.content.divergence.description}</p>
+                        <h3 className="text-lg font-semibold text-white mb-3">{insights.content.divergence.title}</h3>
+                        <p className="text-gray-300 text-sm leading-relaxed">{insights.content.divergence.description}</p>
                       </div>
                     </div>
                   </motion.div>
@@ -494,15 +588,18 @@ export default function Results() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.6 }}
-                    whileHover={{ scale: 1.01 }}
-                    className="p-6 rounded-2xl bg-gradient-to-br from-orange-900/30 to-orange-900/10 border border-orange-500/30 backdrop-blur-sm hover:border-orange-500/50 transition-all"
+                    className="p-6 rounded-xl transition-all duration-200"
+                    style={{ 
+                      backgroundColor: 'rgba(245,158,11,0.08)',
+                      borderLeft: '4px solid #f59e0b'
+                    }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/20">
-                        <TrendingUp className="h-6 w-6 text-white" />
+                      <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                        <AlertTriangle className="h-6 w-6 text-amber-400" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-white mb-3">{insights.content.risks.title}</h3>
+                        <h3 className="text-lg font-semibold text-white mb-3">{insights.content.risks.title}</h3>
                         <ul className="space-y-2">
                           {insights.content.risks.items.map((risk, index) => (
                             <motion.li
@@ -510,9 +607,9 @@ export default function Results() {
                               initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: 0.7 + index * 0.1 }}
-                              className="flex items-start gap-2 text-gray-300"
+                              className="flex items-start gap-2 text-gray-300 text-sm"
                             >
-                              <span className="text-orange-400 mt-1">•</span>
+                              <span className="text-amber-400 mt-1">•</span>
                               <span>{risk}</span>
                             </motion.li>
                           ))}
@@ -523,7 +620,7 @@ export default function Results() {
                 )}
               </div>
             ) : (
-              <div className="p-8 rounded-2xl bg-gray-900/50 border border-gray-800 text-center text-gray-400">
+              <div className="p-8 rounded-xl text-center text-gray-400" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
                 Insights not available yet
               </div>
             )}
