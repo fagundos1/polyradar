@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import Header from "@/components/Header";
 import { TrendingUp, Calendar, Lightbulb, ChevronDown, ChevronUp, CheckCircle, XCircle, Loader2, ExternalLink } from "lucide-react";
@@ -21,6 +21,12 @@ export default function Results() {
   const [insights, setInsights] = useState<Insights | null>(null);
   const [expandedPredictions, setExpandedPredictions] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState<string>('predictions');
+
+  // Refs for sections
+  const predictionsRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const insightsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!analysisId) {
@@ -60,6 +66,33 @@ export default function Results() {
       unsubscribe();
     };
   }, [analysisId, setLocation]);
+
+  // Scroll to section
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement>, section: string) => {
+    setActiveSection(section);
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // Intersection observer for active section
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute('data-section');
+            if (id) setActiveSection(id);
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    if (predictionsRef.current) observer.observe(predictionsRef.current);
+    if (timelineRef.current) observer.observe(timelineRef.current);
+    if (insightsRef.current) observer.observe(insightsRef.current);
+
+    return () => observer.disconnect();
+  }, []);
 
   const togglePrediction = (modelName: string) => {
     setExpandedPredictions(prev => {
@@ -152,18 +185,39 @@ export default function Results() {
       {/* Sidebar */}
       <div className="w-64 bg-card border-r border-border p-6">
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-purple-950/50 border border-purple-900/50">
-            <TrendingUp className="h-5 w-5 text-purple-400" />
-            <span className="font-medium">Predictions</span>
-          </div>
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-card/50 transition-colors cursor-pointer">
-            <Calendar className="h-5 w-5 text-muted-foreground" />
-            <span className="text-muted-foreground">Timeline</span>
-          </div>
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-card/50 transition-colors cursor-pointer">
-            <Lightbulb className="h-5 w-5 text-muted-foreground" />
-            <span className="text-muted-foreground">Key Insights</span>
-          </div>
+          <button
+            onClick={() => scrollToSection(predictionsRef, 'predictions')}
+            className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
+              activeSection === 'predictions'
+                ? 'bg-purple-950/50 border border-purple-900/50'
+                : 'hover:bg-card/50'
+            }`}
+          >
+            <TrendingUp className={`h-5 w-5 ${activeSection === 'predictions' ? 'text-purple-400' : 'text-muted-foreground'}`} />
+            <span className={activeSection === 'predictions' ? 'font-medium' : 'text-muted-foreground'}>Predictions</span>
+          </button>
+          <button
+            onClick={() => scrollToSection(timelineRef, 'timeline')}
+            className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
+              activeSection === 'timeline'
+                ? 'bg-purple-950/50 border border-purple-900/50'
+                : 'hover:bg-card/50'
+            }`}
+          >
+            <Calendar className={`h-5 w-5 ${activeSection === 'timeline' ? 'text-purple-400' : 'text-muted-foreground'}`} />
+            <span className={activeSection === 'timeline' ? 'font-medium' : 'text-muted-foreground'}>Timeline</span>
+          </button>
+          <button
+            onClick={() => scrollToSection(insightsRef, 'insights')}
+            className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
+              activeSection === 'insights'
+                ? 'bg-purple-950/50 border border-purple-900/50'
+                : 'hover:bg-card/50'
+            }`}
+          >
+            <Lightbulb className={`h-5 w-5 ${activeSection === 'insights' ? 'text-purple-400' : 'text-muted-foreground'}`} />
+            <span className={activeSection === 'insights' ? 'font-medium' : 'text-muted-foreground'}>Key Insights</span>
+          </button>
         </div>
       </div>
 
@@ -178,7 +232,7 @@ export default function Results() {
 
         <main className="flex-1 p-8 space-y-8">
           {/* PREDICTIONS Section */}
-          <div>
+          <div ref={predictionsRef} data-section="predictions">
             <h2 className="text-3xl font-bold mb-6">PREDICTIONS</h2>
             
             {predictions.length === 0 ? (
@@ -191,9 +245,7 @@ export default function Results() {
                   <thead>
                     <tr className="border-b border-border/50">
                       <th className="text-left py-4 px-6 font-medium text-muted-foreground">Model</th>
-                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Outcome</th>
-                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Conf</th>
-                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Reasoning</th>
+                      <th className="text-left py-4 px-6 font-medium text-muted-foreground">Outcome</t                    <th className="py-3 px-6 text-left text-sm font-medium text-muted-foreground">Confidence</th>                    <th className="text-left py-4 px-6 font-medium text-muted-foreground">Reasoning</th>
                       <th className="text-left py-4 px-6 font-medium text-muted-foreground">Sources</th>
                     </tr>
                   </thead>
@@ -313,7 +365,7 @@ export default function Results() {
           </div>
 
           {/* TIMELINE Section */}
-          <div>
+          <div ref={timelineRef} data-section="timeline">
             <h2 className="text-3xl font-bold mb-6">TIMELINE</h2>
             
             {timeline && timeline.status === 'success' && timeline.events ? (
@@ -363,7 +415,7 @@ export default function Results() {
           </div>
 
           {/* KEY INSIGHTS Section */}
-          <div>
+          <div ref={insightsRef} data-section="insights">
             <h2 className="text-3xl font-bold mb-6">KEY INSIGHTS</h2>
             
             {insights && insights.status === 'success' && insights.content ? (
