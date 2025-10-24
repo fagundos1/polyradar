@@ -406,16 +406,17 @@ export default function Results() {
             
             {timeline && timeline.status === 'success' && timeline.events && timeline.events.length > 0 ? (
               <TooltipProvider>
-                <div className="p-12 rounded-xl" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
+                <div className="py-12 px-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
                   {/* Desktop: Horizontal Timeline */}
                   <div className="hidden md:block relative w-full py-12">
-                    {/* Horizontal line */}
+                    {/* Enhanced gradient line */}
                     <div 
-                      className="absolute left-0 right-0 h-0.5"
+                      className="absolute left-0 right-0"
                       style={{ 
                         top: '10px',
+                        height: '2px',
                         zIndex: 1,
-                        background: 'linear-gradient(to right, rgba(139,92,246,0.3) 0%, rgba(236,72,153,0.3) 50%, rgba(139,92,246,0.3) 100%)'
+                        background: 'linear-gradient(to right, rgba(139,92,246,0.5) 0%, rgba(236,72,153,0.5) 50%, rgba(139,92,246,0.5) 100%)'
                       }}
                     />
                     
@@ -430,24 +431,33 @@ export default function Results() {
                               transition={{ delay: index * 0.2 + 0.5 }}
                               className="flex flex-col items-center cursor-pointer group"
                             >
-                              {/* Circle */}
+                              {/* Enhanced circle with glow on hover */}
                               <div 
-                                className="w-5 h-5 rounded-full border-2 transition-transform duration-200 group-hover:scale-125"
+                                className="w-5 h-5 rounded-full border-2 transition-all duration-300 group-hover:scale-125 group-hover:shadow-lg"
                                 style={{ 
                                   backgroundColor: '#0a0a0a',
                                   borderColor: '#8b5cf6',
                                   position: 'relative',
-                                  zIndex: 10
+                                  zIndex: 10,
+                                  boxShadow: '0 0 0 rgba(139, 92, 246, 0)'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.6)';
+                                  e.currentTarget.style.borderWidth = '3px';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.boxShadow = '0 0 0 rgba(139, 92, 246, 0)';
+                                  e.currentTarget.style.borderWidth = '2px';
                                 }}
                               />
                               
-                              {/* Date */}
-                              <div className="text-sm font-mono text-gray-300 mt-3">
+                              {/* Brighter date with hover effect */}
+                              <div className="text-[15px] font-semibold font-mono text-gray-200 mt-3 group-hover:text-purple-400 transition-colors duration-200">
                                 {event.date || 'TBD'}
                               </div>
                               
-                              {/* Label */}
-                              <div className="text-xs text-gray-500 mt-1">
+                              {/* Better label */}
+                              <div className="text-[13px] text-gray-400 mt-1.5">
                                 {event.title}
                               </div>
                             </motion.div>
