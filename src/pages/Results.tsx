@@ -408,19 +408,19 @@ export default function Results() {
               <TooltipProvider>
                 <div className="p-12 rounded-xl" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
                   {/* Desktop: Horizontal Timeline */}
-                  <div className="hidden md:block relative py-12">
-                    {/* Gradient Line */}
+                  <div className="hidden md:block relative w-full py-12">
+                    {/* Horizontal line */}
                     <div 
-                      className="absolute left-0 right-0 h-0.5 rounded-full"
+                      className="absolute left-0 right-0 h-0.5"
                       style={{ 
-                        top: '50%',
-                        transform: 'translateY(-50%)',
+                        top: '10px',
+                        zIndex: 1,
                         background: 'linear-gradient(to right, rgba(139,92,246,0.3) 0%, rgba(236,72,153,0.3) 50%, rgba(139,92,246,0.3) 100%)'
                       }}
                     />
                     
                     {/* Events */}
-                    <div className="relative flex justify-between items-center">
+                    <div className="relative flex justify-between items-start" style={{ zIndex: 10 }}>
                       {timeline.events.map((event, index) => (
                         <Tooltip key={index}>
                           <TooltipTrigger asChild>
@@ -428,28 +428,27 @@ export default function Results() {
                               initial={{ scale: 0, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
                               transition={{ delay: index * 0.2 + 0.5 }}
-                              whileHover={{ scale: 1.15 }}
-                              className="flex flex-col items-center cursor-pointer relative z-10"
+                              className="flex flex-col items-center cursor-pointer group"
                             >
-                              {/* Marker */}
+                              {/* Circle */}
                               <div 
-                                className="w-4 h-4 rounded-full border-3 transition-all"
+                                className="w-5 h-5 rounded-full border-2 transition-transform duration-200 group-hover:scale-125"
                                 style={{ 
                                   backgroundColor: '#0a0a0a',
-                                  borderWidth: '3px',
-                                  borderColor: '#8b5cf6'
+                                  borderColor: '#8b5cf6',
+                                  position: 'relative',
+                                  zIndex: 10
                                 }}
                               />
                               
                               {/* Date */}
-                              <div className="mt-4 text-center">
-                                <div className="font-mono text-sm text-gray-300 mb-1">
-                                  {event.date || 'TBD'}
-                                </div>
-                                {/* Label */}
-                                <div className="text-xs text-gray-500">
-                                  {event.title}
-                                </div>
+                              <div className="text-sm font-mono text-gray-300 mt-3">
+                                {event.date || 'TBD'}
+                              </div>
+                              
+                              {/* Label */}
+                              <div className="text-xs text-gray-500 mt-1">
+                                {event.title}
                               </div>
                             </motion.div>
                           </TooltipTrigger>
