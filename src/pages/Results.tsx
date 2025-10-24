@@ -407,7 +407,7 @@ export default function Results() {
               TIMELINE
             </h2>
             
-            {!timeline ? (
+            {!timeline || timeline.status === 'processing' ? (
               <div className="p-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
                 <div className="flex flex-col items-center justify-center py-12">
                   <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
@@ -544,14 +544,6 @@ export default function Results() {
                   );
                 })()}
               </TooltipProvider>
-            ) : timeline.status === 'processing' ? (
-              <div className="p-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
-                  <p className="text-gray-300 text-lg font-medium mb-2">Analyzing Timeline</p>
-                  <p className="text-gray-500 text-sm">Extracting key events and dates...</p>
-                </div>
-              </div>
             ) : (
               <div className="p-8 rounded-xl text-center text-gray-400" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
                 Timeline not available yet
@@ -571,7 +563,7 @@ export default function Results() {
               KEY INSIGHTS
             </h2>
             
-            {!insights ? (
+            {!insights || insights.status === 'processing' ? (
               <div className="p-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
                 <div className="flex flex-col items-center justify-center py-12">
                   <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
@@ -665,14 +657,6 @@ export default function Results() {
                     </div>
                   </motion.div>
                 )}
-              </div>
-            ) : insights.status === 'processing' ? (
-              <div className="p-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
-                  <p className="text-gray-300 text-lg font-medium mb-2">Generating Insights</p>
-                  <p className="text-gray-500 text-sm">Analyzing predictions and identifying key patterns...</p>
-                </div>
               </div>
             ) : (
               <div className="p-8 rounded-xl text-center text-gray-400" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
