@@ -417,8 +417,10 @@ export default function Results() {
             
             {!timeline || timeline.status === 'processing' ? (
               <div className="p-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-12 w-12 text-purple-400 animate-spin" />
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
+                  <p className="text-gray-300 text-lg font-medium mb-2">Analyzing Timeline</p>
+                  <p className="text-gray-500 text-sm">Extracting key events and dates...</p>
                 </div>
               </div>
             ) : timeline.status === 'success' && timeline.events && timeline.events.length > 0 ? (
@@ -571,8 +573,10 @@ export default function Results() {
             
             {!insights || insights.status === 'processing' ? (
               <div className="p-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-12 w-12 text-purple-400 animate-spin" />
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
+                  <p className="text-gray-300 text-lg font-medium mb-2">Generating Insights</p>
+                  <p className="text-gray-500 text-sm">Analyzing predictions and identifying key patterns...</p>
                 </div>
               </div>
             ) : insights.status === 'success' && insights.content ? (
@@ -683,8 +687,10 @@ export default function Results() {
             
             {!sources || sources.status === 'processing' ? (
               <div className="p-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-12 w-12 text-purple-400 animate-spin" />
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
+                  <p className="text-gray-300 text-lg font-medium mb-2">Collecting Sources</p>
+                  <p className="text-gray-500 text-sm">Gathering relevant news articles and references...</p>
                 </div>
               </div>
             ) : sources.status === 'success' && sources.links && sources.links.length > 0 ? (
