@@ -577,6 +577,7 @@ export default function Results() {
                   <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
                   <p className="text-gray-300 text-lg font-medium mb-2">Generating Insights</p>
                   <p className="text-gray-500 text-sm">Analyzing predictions and identifying key patterns...</p>
+                  <p className="text-gray-400 text-xs mt-2">This usually takes 3-4 minutes</p>
                 </div>
               </div>
             ) : insights.status === 'success' && insights.content ? (
@@ -691,6 +692,7 @@ export default function Results() {
                   <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
                   <p className="text-gray-300 text-lg font-medium mb-2">Collecting Sources</p>
                   <p className="text-gray-500 text-sm">Gathering relevant news articles and references...</p>
+                  <p className="text-gray-400 text-xs mt-2">This usually takes 3-4 minutes</p>
                 </div>
               </div>
             ) : sources.status === 'success' && sources.links && sources.links.length > 0 ? (
