@@ -271,7 +271,7 @@ export default function Results() {
                 className="inline-flex items-center gap-2 group"
               >
                 <h1 className="text-2xl md:text-3xl font-bold text-white group-hover:text-purple-400 transition-colors">
-                  {analysis.event_title || 'Polymarket Event'}
+                  {analysis.event_title || (analysis.event_data?.question) || 'Polymarket Event'}
                 </h1>
                 <ExternalLink className="h-6 w-6 text-gray-400 group-hover:text-purple-400 transition-colors" />
               </a>
