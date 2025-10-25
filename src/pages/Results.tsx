@@ -16,7 +16,7 @@ import {
   AlertTriangle,
   ExternalLink
 } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 import { useDynamic } from "@/hooks/useDynamic";
 import { getAnalysisWithResults, subscribeToAnalysis } from "@/lib/api";
 import type { Analysis, ModelPrediction, Timeline, Insights, Sources } from "@/lib/supabase";
@@ -446,134 +446,71 @@ export default function Results() {
                 </div>
               </div>
             ) : timeline.status === 'success' && timeline.events && timeline.events.length > 0 ? (
-              <TooltipProvider>
-                {(() => {
-                  const sortedEvents = [...timeline.events].sort((a, b) => {
-                    const dateA = new Date(a.date || '9999-12-31').getTime();
-                    const dateB = new Date(b.date || '9999-12-31').getTime();
-                    return dateA - dateB;
-                  });
-                  
-                  return (
-                <div className="py-12 px-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
-                  {/* Desktop: Horizontal Timeline */}
-                  <div className="hidden md:block relative w-full py-12">
-                    {/* Enhanced gradient line */}
-                    <div 
-                      className="absolute left-0 right-0"
-                      style={{ 
-                        top: '50%',
-                        height: '2px',
-                        zIndex: 1,
-                        background: 'linear-gradient(to right, rgba(139,92,246,0.5) 0%, rgba(236,72,153,0.5) 50%, rgba(139,92,246,0.5) 100%)',
-                        transform: 'translateY(-50%)'
-                      }}
-                    />
-                    
-                    {/* Events */}
-                    <div className="relative flex justify-between items-center" style={{ zIndex: 10 }}>
-                      {sortedEvents.map((event, index) => (
-                        <Tooltip key={index}>
-                          <TooltipTrigger asChild>
-                            <motion.div
-                              initial={{ scale: 0, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              transition={{ delay: index * 0.2 + 0.5 }}
-                              className="flex flex-col items-center cursor-pointer group"
-                            >
-                              {/* Enhanced circle with glow on hover */}
-                              <div 
-                                className="w-5 h-5 rounded-full border-2 transition-all duration-300 group-hover:scale-125 group-hover:shadow-lg"
-                                style={{ 
-                                  backgroundColor: '#0a0a0a',
-                                  borderColor: '#8b5cf6',
-                                  position: 'relative',
-                                  zIndex: 10,
-                                  boxShadow: '0 0 0 rgba(139, 92, 246, 0)'
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.6)';
-                                  e.currentTarget.style.borderWidth = '3px';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.boxShadow = '0 0 0 rgba(139, 92, 246, 0)';
-                                  e.currentTarget.style.borderWidth = '2px';
-                                }}
-                              />
-                              
-                              {/* Brighter date with hover effect */}
-                              <div className="text-[15px] font-semibold text-gray-200 mt-3 group-hover:text-purple-400 transition-colors duration-200">
-                                {event.date || 'TBD'}
-                              </div>
-
-                              {/* Better label */}
-                              <div className="text-[13px] text-gray-400 mt-1.5">
-                                {event.title}
-                              </div>
-                            </motion.div>
-                          </TooltipTrigger>
-                          <TooltipContent 
-                            className="max-w-xs rounded-lg p-3"
-                            style={{ 
-                              backgroundColor: '#1a1a1a', 
-                              border: '1px solid rgba(139,92,246,0.5)',
-                              boxShadow: '0 10px 15px rgba(139,92,246,0.2)'
-                            }}
-                          >
-                            <p className="text-sm text-gray-300">{event.description}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      ))}
-                  </div>
-                  </div>
-
-                  {/* Mobile: Vertical Timeline */}
-                  <div className="md:hidden space-y-6">
-                    {sortedEvents.map((event, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="flex gap-4"
-                      >
-                        {/* Marker and Line */}
-                        <div className="flex flex-col items-center">
+              (() => {
+                const sortedEvents = [...timeline.events].sort((a, b) => {
+                  const dateA = new Date(a.date || '9999-12-31').getTime();
+                  const dateB = new Date(b.date || '9999-12-31').getTime();
+                  return dateA - dateB;
+                });
+                
+                return (
+              <div className="py-8 px-8 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
+                {/* Vertical Timeline for all devices */}
+                <div className="space-y-6">
+                  {sortedEvents.map((event, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex gap-6 group"
+                    >
+                      {/* Left: Date and Marker */}
+                      <div className="flex flex-col items-center" style={{ minWidth: '120px' }}>
+                        {/* Date */}
+                        <div className="text-base font-semibold text-gray-200 mb-3 group-hover:text-purple-400 transition-colors duration-200">
+                          {event.date || 'TBD'}
+                        </div>
+                        
+                        {/* Marker */}
+                        <div className="flex flex-col items-center flex-1">
                           <div 
-                            className="w-4 h-4 rounded-full border-3"
+                            className="w-4 h-4 rounded-full border-3 transition-all duration-300 group-hover:scale-125 group-hover:shadow-lg"
                             style={{ 
                               backgroundColor: '#0a0a0a',
                               borderWidth: '3px',
-                              borderColor: '#8b5cf6'
+                              borderColor: '#8b5cf6',
+                              boxShadow: '0 0 0 rgba(139, 92, 246, 0)'
                             }}
                           />
                           {index < sortedEvents.length - 1 && (
                             <div 
-                              className="w-0.5 flex-1 mt-2"
-                              style={{ backgroundColor: 'rgba(139,92,246,0.3)', minHeight: '40px' }}
+                              className="w-0.5 flex-1 mt-3"
+                              style={{ 
+                                background: 'linear-gradient(to bottom, rgba(139,92,246,0.5), rgba(139,92,246,0.2))',
+                                minHeight: '60px'
+                              }}
                             />
                           )}
                         </div>
+                      </div>
 
-                        {/* Content */}
-                        <div className="flex-1 pb-6">
-                          <div className="text-sm text-gray-300 mb-1">
-                            {event.date || 'TBD'}
-                          </div>
-                          <div className="text-sm font-semibold text-white mb-2">
-                            {event.title}
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            {event.description}
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
+                      {/* Right: Title and Description */}
+                      <div className="flex-1 pb-4">
+                        <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-purple-400 transition-colors duration-200">
+                          {event.title}
+                        </h3>
+                        <p className="text-sm text-gray-400 leading-relaxed">
+                          {event.description}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
-                  );
-                })()}
-              </TooltipProvider>
+              </div>
+                );
+              })()
+
                 ) : (
               <div className="p-8 rounded-xl text-center text-gray-400" style={{ backgroundColor: '#1a1a1a', border: '1px solid #333333' }}>
                 Timeline not available yet
