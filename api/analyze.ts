@@ -1,7 +1,5 @@
-import { Router } from 'express';
+import type { Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
-
-export const webhooksRouter = Router();
 
 // Ленивая инициализация Supabase клиента
 function getSupabaseClient() {
@@ -16,88 +14,9 @@ function getSupabaseClient() {
 }
 
 /**
- * Endpoint для приема результатов анализа от Make.com
- * POST /api/webhooks/analysis-result
- */
-webhooksRouter.post('/analysis-result', async (req, res) => {
-  try {
-    const {
-      analysis_id,
-      predictions,
-      timeline,
-      insights,
-      status = 'completed'
-    } = req.body;
-
-    // Валидация обязательных полей
-    if (!analysis_id) {
-      return res.status(400).json({ error: 'analysis_id is required' });
-    }
-
-    // Обновляем анализ в базе данных
-    const supabase = getSupabaseClient();
-    const { error } = await supabase
-      .from('analyses')
-      .update({
-        status,
-        predictions: predictions || null,
-        timeline: timeline || null,
-        insights: insights || null,
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', analysis_id);
-
-    if (error) {
-      console.error('Error updating analysis:', error);
-      return res.status(500).json({ error: 'Failed to update analysis' });
-    }
-
-    res.json({ success: true, analysis_id });
-  } catch (error) {
-    console.error('Webhook error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-/**
- * Endpoint для обработки ошибок анализа
- * POST /api/webhooks/analysis-error
- */
-webhooksRouter.post('/analysis-error', async (req, res) => {
-  try {
-    const { analysis_id, error_message } = req.body;
-
-    if (!analysis_id) {
-      return res.status(400).json({ error: 'analysis_id is required' });
-    }
-
-    // Обновляем статус анализа на failed
-    const supabase = getSupabaseClient();
-    const { error } = await supabase
-      .from('analyses')
-      .update({
-        status: 'failed',
-        error_message: error_message || 'Analysis failed',
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', analysis_id);
-
-    if (error) {
-      console.error('Error updating analysis:', error);
-      return res.status(500).json({ error: 'Failed to update analysis' });
-    }
-
-    res.json({ success: true, analysis_id });
-  } catch (error) {
-    console.error('Webhook error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-
-
-/**
  * Извлекает название события из Polymarket URL
+ * Пример: https://polymarket.com/event/what-will-be-the-top-global-netflix-movie-this-week-638
+ * Результат: "What will be the top global Netflix movie this week?"
  */
 function extractEventTitleFromUrl(url: string): string | null {
   try {
@@ -128,9 +47,13 @@ function extractEventTitleFromUrl(url: string): string | null {
 
 /**
  * Endpoint для создания анализа
- * POST /api/webhooks/analyze
+ * POST /api/analyze
  */
-webhooksRouter.post('/analyze', async (req, res) => {
+export default async function handler(req: Request, res: Response) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
     const { event_url, user_id } = req.body;
 
@@ -172,5 +95,5 @@ webhooksRouter.post('/analyze', async (req, res) => {
     console.error('Analyze endpoint error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-});
+}
 
