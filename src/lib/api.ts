@@ -42,7 +42,7 @@ export async function createAnalysis(params: CreateAnalysisParams): Promise<stri
   }
 
   // Вызываем API endpoint для создания анализа и запуска webhooks
-  const response = await fetch('/api/webhooks/analyze', {
+  const response = await fetch('/api/analyze', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
