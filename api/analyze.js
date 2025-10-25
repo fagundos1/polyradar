@@ -1,5 +1,35 @@
 import { createClient } from '@supabase/supabase-js';
 
+/**
+ * Extract event title from Polymarket URL
+ */
+function extractEventTitleFromUrl(url) {
+  try {
+    const urlObj = new URL(url);
+    const pathname = urlObj.pathname;
+    
+    // Extract slug from URL (part between /event/ and number at the end)
+    const match = pathname.match(/\/event\/([^?]+)/);
+    if (!match) return null;
+    
+    let slug = match[1];
+    
+    // Remove number at the end (e.g., -638)
+    slug = slug.replace(/-\d+$/, '');
+    
+    // Replace dashes with spaces and capitalize first letter of each word
+    const title = slug
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    
+    return title;
+  } catch (error) {
+    console.error('Error extracting title from URL:', error);
+    return null;
+  }
+}
+
 const WEBHOOK_URLS = {
   model1: 'https://hook.us2.make.com/mio87mwc00gx78v2wo1ex41xwzhrmpd5',
   model2: 'https://hook.us2.make.com/632ia2fn81ycsukbgc1qnkbgfoitq2dc',
@@ -22,15 +52,25 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'event_url is required' });
     }
 
+    // Extract event title from URL
+    const eventTitle = extractEventTitleFromUrl(event_url);
+    console.log('Extracted event title:', eventTitle, 'from URL:', event_url);
+
+    // Get Supabase credentials from environment
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+
     // Debug environment variables
-    console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET' : 'NOT SET');
-    console.log('SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT SET');
+    console.log('SUPABASE_URL:', supabaseUrl ? 'SET' : 'NOT SET');
+    console.log('SUPABASE_ANON_KEY:', supabaseAnonKey ? 'SET' : 'NOT SET');
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Supabase credentials not found in environment');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
 
     // Initialize Supabase client
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_ANON_KEY
-    );
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     // Test Supabase connection first
     const { data: testData, error: testError } = await supabase
@@ -54,6 +94,7 @@ export default async function handler(req, res) {
              .insert({
                user_id: user_id || null,
                polymarket_url: event_url,
+               event_title: eventTitle,
                status: 'analyzing',
              })
              .select()
