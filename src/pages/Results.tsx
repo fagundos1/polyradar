@@ -706,7 +706,7 @@ export default function Results() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="flex items-center gap-3 p-4 rounded-xl transition-all duration-200 group"
+                    className="flex items-center gap-3 p-4 rounded-xl transition-all duration-200 group overflow-hidden"
                     style={{ 
                       backgroundColor: '#1a1a1a',
                       border: '1px solid #333333'
