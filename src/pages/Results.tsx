@@ -257,6 +257,28 @@ export default function Results() {
       />
 
         <main className="flex-1 p-4 md:p-8 space-y-16">
+          {/* Market Info */}
+          {analysis && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8"
+            >
+              <a
+                href={analysis.polymarket_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 group"
+              >
+                <h1 className="text-2xl md:text-3xl font-bold text-white group-hover:text-purple-400 transition-colors">
+                  {analysis.event_title || 'Polymarket Event'}
+                </h1>
+                <ExternalLink className="h-6 w-6 text-gray-400 group-hover:text-purple-400 transition-colors" />
+              </a>
+              <p className="text-sm text-gray-500 mt-1">Polymarket Analysis</p>
+            </motion.div>
+          )}
+
           {/* PREDICTIONS Section */}
           <motion.div
             ref={predictionsRef}
