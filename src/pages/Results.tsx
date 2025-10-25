@@ -415,7 +415,7 @@ export default function Results() {
               TIMELINE
             </h2>
             
-            {!timeline || timeline.status === 'processing' ? (
+            {!timeline || timeline.status === 'processing' || timeline.status === 'pending' ? (
               <div className="p-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
                 <div className="flex flex-col items-center justify-center py-12">
                   <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
@@ -571,7 +571,7 @@ export default function Results() {
               KEY INSIGHTS
             </h2>
             
-            {!insights || insights.status === 'processing' ? (
+            {!insights || insights.status === 'processing' || insights.status === 'pending' ? (
               <div className="p-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
                 <div className="flex flex-col items-center justify-center py-12">
                   <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
@@ -685,7 +685,7 @@ export default function Results() {
               SOURCES
             </h2>
             
-            {!sources || sources.status === 'processing' ? (
+            {!sources || sources.status === 'processing' || sources.status === 'pending' ? (
               <div className="p-12 rounded-xl" style={{ backgroundColor: 'rgba(26, 26, 26, 0.3)', border: '1px solid rgba(51, 51, 51, 0.3)' }}>
                 <div className="flex flex-col items-center justify-center py-12">
                   <Loader2 className="h-12 w-12 text-purple-400 animate-spin mb-4" />
